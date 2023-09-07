@@ -24,5 +24,5 @@ class LogicDataBuilder {
 
   void updateSlot(int index, LocatedLogicData data) => _slots[index] = data;
 
-  LogicData build() => LogicData.fromBytes([for (final (:data, :index) in _slots) data[index]]);
+  LogicData build() => LogicData.fromBits([for (final (:data, :index) in _slots) data[index]]);
 }
