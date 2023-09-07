@@ -1,44 +1,52 @@
-import 'package:fast_immutable_collections/fast_immutable_collections.dart';
-
 typedef Bit = bool;
 
 final class LogicData {
-  LogicData(this.length, {required IList<Bit> data}) : _data = data;
+  const LogicData(this.length, {required List<Bit> data}) : _data = data;
 
   factory LogicData.generate(int length, Bit Function(int index) generator) {
-    return LogicData(length, data: IList<Bit>(Iterable.generate(length, generator)));
+    return LogicData(length, data: List.generate(length, generator));
   }
 
-  factory LogicData.fromBytes(List<Bit> bytes) {
-    return LogicData(bytes.length, data: IList(bytes));
+  factory LogicData.fromBits(List<Bit> bits) {
+    return LogicData(bits.length, data: bits);
   }
 
   factory LogicData.bit(Bit bit) {
-    return LogicData(1, data: IListConst<Bit>([bit]));
+    return LogicData(1, data: [bit]);
   }
 
   factory LogicData.merge(LogicData a, LogicData b) {
-    return LogicData(a.length + b.length, data: IListConst<Bit>([...a.data, ...b.data]));
+    return LogicData(a.length + b.length, data: [...a.data, ...b.data]);
   }
 
   final int length;
-  final IList<Bit> _data;
-  IList<Bit> get data => _data;
+  final List<Bit> _data;
+  List<Bit> get data => _data;
 
   Bit operator [](int index) => _data[index];
+  operator []=(int index, Bit value) => _data[index] = value;
 
   LogicData operator +(LogicData other) => LogicData.merge(this, other);
+
+  @override
+  operator ==(Object? other) {
+    if (other is LogicData) return other._data == _data;
+    return false;
+  }
+
+  @override
+  int get hashCode => _data.hashCode;
 }
 
 extension IntLogicDataTransformation on int {
   LogicData get logicData {
-    return LogicData.fromBytes(bits);
+    return LogicData.fromBits(bits);
   }
 }
 
 extension StringLogicDataTransformation on String {
   LogicData get logicData {
-    return LogicData.fromBytes(bits);
+    return LogicData.fromBits(bits);
   }
 }
 
