@@ -69,10 +69,13 @@ class GateEditor extends StatelessWidget {
           child: ListenableBuilder(
             listenable: gate,
             builder: (context, _) => GateLogicDataBar(
+              allowToggle: true,
+              //
               data: gate.input,
               labelMap: gate.inputLabel,
               onDataChanged: (value) => gate.input = value,
               onLabelMapChanged: (value) => gate.inputLabel = value,
+              onRemoveAt: (value) => gate.removeInputAt(value),
             ),
           ),
         ),
@@ -88,6 +91,7 @@ class GateEditor extends StatelessWidget {
               labelMap: gate.outputLabel,
               onDataChanged: (value) => gate.output = value,
               onLabelMapChanged: (value) => gate.outputLabel = value,
+              onRemoveAt: (value) => gate.removeOutputAt(value),
             ),
           ),
         ),

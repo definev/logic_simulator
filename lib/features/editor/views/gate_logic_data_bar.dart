@@ -7,18 +7,22 @@ import 'package:logic_simulator/features/gates/domain/logic_data.dart';
 import 'package:super_context_menu/super_context_menu.dart';
 
 class GateLogicDataBar extends StatelessWidget {
-const GateLogicDataBar({
+  const GateLogicDataBar({
     super.key,
     required this.data,
     required this.labelMap,
     required this.onDataChanged,
     required this.onLabelMapChanged,
+    required this.onRemoveAt,
+    this.allowToggle = false,
   });
 
   final LogicData data;
   final LogicDataLabelMap labelMap;
   final ValueChanged<LogicData> onDataChanged;
   final ValueChanged<LogicDataLabelMap> onLabelMapChanged;
+  final ValueChanged<int> onRemoveAt;
+  final bool allowToggle;
 
   double get barWidth => 50 + Spacing.xs.size * 2;
 
@@ -35,14 +39,14 @@ const GateLogicDataBar({
             final label = labelMap[index];
 
             void toggleCurrentIndex() {
+              if (!allowToggle) return;
               final newData = data;
               newData[index] = !value;
               onDataChanged(newData);
             }
 
             void deleteCurrentIndex() {
-              final newData = data.removeAt(index);
-              onDataChanged(newData);
+              onRemoveAt(index);
             }
 
             return ContextMenuWidget(
