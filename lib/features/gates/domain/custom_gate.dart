@@ -120,8 +120,7 @@ class CustomGate extends LogicGate {
 
   void removeInputAt(int value) {
     _inputInstructions.removeWhere((instruction) => instruction.from == 1 && instruction.fromIndex == value);
-    final newInput = input;
-    newInput.removeAt(value);
+    final newInput = input.removeAt(value);
     input = newInput;
   }
 
