@@ -10,7 +10,7 @@ typedef LogicDataLabelMap = Map<int, String>;
 class CustomGate extends LogicGate {
   CustomGate({
     required this.gates,
-    required this.instructions,
+    List<Instruction> instructions = const [],
     required super.input,
     required super.output,
     LogicDataLabelMap? inputLabel,
@@ -18,16 +18,49 @@ class CustomGate extends LogicGate {
   })  : _inputLabel = inputLabel ?? {},
         _outputLabel = outputLabel ?? {} {
     gates.map((e) => e.addListener(notifyListeners));
+    this.instructions = instructions;
   }
 
   final List<LogicGate> gates;
-  final List<Instruction> instructions;
+
+  late List<InputInstruction> _inputInstructions;
+  late List<OutputInstruction> _outputInstructions;
+  set instructions(List<Instruction> value) {
+    _inputInstructions = value.fold([], (value, element) {
+      if (element is InputInstruction) value.add(element);
+      return value;
+    });
+    _outputInstructions = value.fold([], (value, element) {
+      if (element is OutputInstruction) value.add(element);
+      return value;
+    });
+  }
+
+  void addInputInstruction(InputInstruction instruction) {
+    _inputInstructions.removeWhere((inst) => inst.to == instruction.to);
+    _inputInstructions.add(instruction);
+    compute();
+  }
+
+  void addOutputInstruction(OutputInstruction instruction) {
+    _outputInstructions.removeWhere((inst) => inst.outputIndex == instruction.outputIndex);
+    _outputInstructions.add(instruction);
+  }
+
   LogicDataLabelMap _inputLabel;
-  set inputLabel(LogicDataLabelMap value) => _inputLabel = value;
+  set inputLabel(LogicDataLabelMap value) {
+    _inputLabel = value;
+    notifyListeners();
+  }
+
   LogicDataLabelMap get inputLabel => _inputLabel;
 
   LogicDataLabelMap _outputLabel;
-  set outputLabel(LogicDataLabelMap value) => _outputLabel = value;
+  set outputLabel(LogicDataLabelMap value) {
+    _outputLabel = value;
+    notifyListeners();
+  }
+
   LogicDataLabelMap get outputLabel => _outputLabel;
 
   @override
@@ -44,31 +77,57 @@ class CustomGate extends LogicGate {
     notifyListeners();
   }
 
-  void _setInstruction(LogicData input, LogicData output) {
-    for (final instruction in instructions) {
-      switch (instruction) {
-        case SetInstruction(:final at, :final atIndex, :final to, :final toIndex):
-          if (at == -1) {
-            final toGate = gates[to];
-            toGate.input[toIndex] = input[atIndex];
-          } else if (to == -1) {
-            final atGate = gates[at];
-            output[atIndex] = atGate.output[atIndex];
-          } else {
-            final atGate = gates[at];
-            final toGate = gates[to];
-            toGate.input[toIndex] = atGate.output[atIndex];
-          }
+  @override
+  LogicData compute([LogicData? input]) {
+    _executeInputInstruction(input ?? this.input);
+    for (final gate in gates) {
+      gate.output = gate.compute();
+    }
+    _executeOutputInstruction(input ?? this.input);
+    return output;
+  }
+
+  void _executeInputInstruction(LogicData input) {
+    for (final InputInstruction(:from, :fromIndex, :to, :toIndex) in _inputInstructions) {
+      if (from == to) {
+        final gate = gates[from];
+        final newInput = gate.input;
+        newInput[toIndex] = gate.output[fromIndex];
+        input = newInput;
+      } else {
+        final fromGate = from == -1 ? this : gates[from];
+        final toGate = gates[to];
+        final newInput = toGate.input;
+        newInput[toIndex] = fromGate.output[fromIndex];
+        toGate.input = newInput;
       }
     }
   }
 
-  @override
-  LogicData compute([LogicData? input]) {
-    for (final gate in gates) {
-      gate.output = gate.compute();
+  void _executeOutputInstruction(LogicData input) {
+    for (final OutputInstruction(:from, :fromIndex, :outputIndex) in _outputInstructions) {
+      if (from == -1) {
+        final newOutput = output;
+        newOutput[outputIndex] = input[fromIndex];
+        output = newOutput;
+      } else {
+        final fromGate = gates[from];
+        final newOutput = output;
+        newOutput[outputIndex] = fromGate.output[fromIndex];
+      }
     }
-    _setInstruction(input ?? this.input, output);
-    return output;
+  }
+
+  void removeInputAt(int value) {
+    _inputInstructions.removeWhere((instruction) => instruction.from == 1 && instruction.fromIndex == value);
+    final newInput = input;
+    newInput.removeAt(value);
+    input = newInput;
+  }
+
+  void removeOutputAt(int value) {
+    _outputInstructions.removeWhere((instruction) => instruction.outputIndex == value);
+    final newOutput = output.removeAt(value);
+    output = newOutput;
   }
 }

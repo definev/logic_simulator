@@ -29,15 +29,15 @@ abstract class LogicGate extends ChangeNotifier {
   LogicData _input;
   LogicData get input => _input;
   set input(LogicData data) {
-    output = compute(input);
     _input = data;
+    _output = compute(data);
     notifyListeners();
   }
 
   LogicData _output;
   set output(LogicData data) {
-    if (_output == data) return;
     _output = data;
+    notifyListeners();
   }
 
   LogicData get output => _output;
