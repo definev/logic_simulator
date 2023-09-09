@@ -5,18 +5,36 @@ import 'package:logic_simulator/features/gates/domain/logic_data.dart';
 import 'instruction.dart';
 import 'logic_gate.dart';
 
+typedef LogicDataLabelMap = Map<int, String>;
+
 class CustomGate extends LogicGate {
   CustomGate({
     required this.gates,
     required this.instructions,
     required super.input,
     required super.output,
-  }) {
+    LogicDataLabelMap? inputLabel,
+    LogicDataLabelMap? outputLabel,
+  })  : _inputLabel = inputLabel ?? {},
+        _outputLabel = outputLabel ?? {} {
     gates.map((e) => e.addListener(notifyListeners));
   }
 
   final List<LogicGate> gates;
   final List<Instruction> instructions;
+  LogicDataLabelMap _inputLabel;
+  set inputLabel(LogicDataLabelMap value) => _inputLabel = value;
+  LogicDataLabelMap get inputLabel => _inputLabel;
+
+  LogicDataLabelMap _outputLabel;
+  set outputLabel(LogicDataLabelMap value) => _outputLabel = value;
+  LogicDataLabelMap get outputLabel => _outputLabel;
+
+  @override
+  void dispose() {
+    gates.map((e) => e.removeListener(notifyListeners));
+    super.dispose();
+  }
 
   String _name = 'custom';
   @override

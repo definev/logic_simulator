@@ -28,6 +28,11 @@ final class LogicData {
 
   LogicData operator +(LogicData other) => LogicData.merge(this, other);
 
+  LogicData removeAt(int index) {
+    _data.removeAt(index);
+    return LogicData.fromBits(_data);
+  }
+
   @override
   operator ==(Object? other) {
     if (other is LogicData) return other._data == _data;

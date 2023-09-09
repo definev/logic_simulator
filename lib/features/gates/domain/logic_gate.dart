@@ -31,13 +31,13 @@ abstract class LogicGate extends ChangeNotifier {
   set input(LogicData data) {
     output = compute(input);
     _input = data;
+    notifyListeners();
   }
 
   LogicData _output;
   set output(LogicData data) {
     if (_output == data) return;
     _output = data;
-    notifyListeners();
   }
 
   LogicData get output => _output;
