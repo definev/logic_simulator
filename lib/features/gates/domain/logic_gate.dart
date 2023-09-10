@@ -34,6 +34,11 @@ abstract class LogicGate extends ChangeNotifier {
     notifyListeners();
   }
 
+  void silentUpdateInput(LogicData data) {
+    _input = data;
+    notifyListeners();
+  }
+
   LogicData _output;
   set output(LogicData data) {
     _output = data;
