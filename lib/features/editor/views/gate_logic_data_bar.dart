@@ -67,18 +67,11 @@ class GateLogicDataBar extends StatelessWidget {
                   ],
                 );
               },
-              child: GestureDetector(
-                onTap: toggleCurrentIndex,
-                child: Semantics(
-                  label: label,
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: switch (value) { true => Colors.red, false => Colors.grey },
-                      shape: BoxShape.circle,
-                    ),
-                    child: SizedBox.square(dimension: 50),
-                  ),
-                ),
+              child: BitValueDot(
+                size: 50,
+                label: label,
+                value: value,
+                onToggle: toggleCurrentIndex,
               ),
             );
           }(),
@@ -103,5 +96,49 @@ class GateLogicDataBar extends StatelessWidget {
 
   void insertLogicData() {
     onDataChanged((value: data + LogicData.bit(false), needCompute: false));
+  }
+}
+
+class BitValueDot extends StatelessWidget {
+  const BitValueDot({
+    super.key,
+    required this.label,
+    required this.value,
+    this.onToggle,
+    required this.size,
+  });
+
+  final String? label;
+  final Bit value;
+  final VoidCallback? onToggle;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return LongPressDraggable(
+      dragAnchorStrategy: (draggable, context, position) {
+        final RenderBox renderObject = context.findRenderObject()! as RenderBox;
+        return renderObject.globalToLocal(position);
+      },
+      feedback: ColoredBox(
+        color: Colors.green,
+        child: SizedBox.square(
+          dimension: size,
+        ),
+      ),
+      child: GestureDetector(
+        onTap: onToggle,
+        child: Semantics(
+          label: label,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: switch (value) { true => Colors.red, false => Colors.grey },
+              shape: BoxShape.circle,
+            ),
+            child: SizedBox.square(dimension: size),
+          ),
+        ),
+      ),
+    );
   }
 }

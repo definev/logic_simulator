@@ -61,39 +61,42 @@ class GateEditor extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+    return Stack(
       children: [
-        Flexible(
-          flex: 1,
-          child: ListenableBuilder(
-            listenable: gate,
-            builder: (context, _) => GateLogicDataBar(
-              allowToggle: true,
-              //
-              data: gate.input,
-              labelMap: gate.inputLabel,
-              onDataChanged: (value) => gate.input = value,
-              onLabelMapChanged: (value) => gate.inputLabel = value,
-              onRemoveAt: (value) => gate.removeInputAt(value),
+        Positioned.fill(child: SizedBox()),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            ListenableBuilder(
+              listenable: gate,
+              builder: (context, _) => GateLogicDataBar(
+                allowToggle: true,
+                //
+                data: gate.input,
+                labelMap: gate.inputLabel,
+                onDataChanged: (value) {
+                  if (value.needCompute) {
+                    gate.input = value.value;
+                  } else {
+                    gate.silentUpdateInput(value.value);
+                  }
+                },
+                onLabelMapChanged: (value) => gate.inputLabel = value,
+                onRemoveAt: (value) => gate.removeInputAt(value),
+              ),
             ),
-          ),
-        ),
-        Expanded(
-          flex: 8,
-          child: SizedBox(),
-        ),
-        Flexible(
-          child: ListenableBuilder(
-            listenable: gate,
-            builder: (context, _) => GateLogicDataBar(
-              data: gate.output,
-              labelMap: gate.outputLabel,
-              onDataChanged: (value) => gate.output = value,
-              onLabelMapChanged: (value) => gate.outputLabel = value,
-              onRemoveAt: (value) => gate.removeOutputAt(value),
+            ListenableBuilder(
+              listenable: gate,
+              builder: (context, _) => GateLogicDataBar(
+                data: gate.output,
+                labelMap: gate.outputLabel,
+                onDataChanged: (value) => gate.output = value.value,
+                onLabelMapChanged: (value) => gate.outputLabel = value,
+                onRemoveAt: (value) => gate.removeOutputAt(value),
+              ),
             ),
-          ),
+          ],
         ),
       ],
     );
