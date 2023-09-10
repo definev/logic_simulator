@@ -6,6 +6,8 @@ import 'package:logic_simulator/features/gates/domain/custom_gate.dart';
 import 'package:logic_simulator/features/gates/domain/logic_data.dart';
 import 'package:super_context_menu/super_context_menu.dart';
 
+typedef ComputeableLogicData = ({LogicData value, bool needCompute});
+
 class GateLogicDataBar extends StatelessWidget {
   const GateLogicDataBar({
     super.key,
@@ -19,7 +21,7 @@ class GateLogicDataBar extends StatelessWidget {
 
   final LogicData data;
   final LogicDataLabelMap labelMap;
-  final ValueChanged<LogicData> onDataChanged;
+  final ValueChanged<ComputeableLogicData> onDataChanged;
   final ValueChanged<LogicDataLabelMap> onLabelMapChanged;
   final ValueChanged<int> onRemoveAt;
   final bool allowToggle;
@@ -42,7 +44,7 @@ class GateLogicDataBar extends StatelessWidget {
               if (!allowToggle) return;
               final newData = data;
               newData[index] = !value;
-              onDataChanged(newData);
+              onDataChanged((value: newData, needCompute: true));
             }
 
             void deleteCurrentIndex() {
@@ -100,6 +102,6 @@ class GateLogicDataBar extends StatelessWidget {
   }
 
   void insertLogicData() {
-    onDataChanged(data + LogicData.bit(false));
+    onDataChanged((value: data + LogicData.bit(false), needCompute: false));
   }
 }
