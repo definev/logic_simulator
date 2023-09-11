@@ -1,9 +1,13 @@
 import 'package:flextras/flextras.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:gap/gap.dart';
 import 'package:logic_simulator/_internal/spacing.dart';
+import 'package:logic_simulator/features/editor/views/entity/dot_drag_position.dart';
+import 'package:logic_simulator/features/editor/views/widgets/drag_line_painter.dart';
 import 'package:logic_simulator/features/gates/domain/custom_gate.dart';
 import 'package:logic_simulator/features/gates/domain/logic_data.dart';
+import 'package:logic_simulator/utils/render_object.dart';
 import 'package:super_context_menu/super_context_menu.dart';
 
 typedef ComputeableLogicData = ({LogicData value, bool needCompute});
@@ -99,7 +103,7 @@ class GateLogicDataBar extends StatelessWidget {
   }
 }
 
-class BitValueDot extends StatelessWidget {
+class BitValueDot extends HookWidget {
   const BitValueDot({
     super.key,
     required this.label,
@@ -115,15 +119,52 @@ class BitValueDot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final overlay = Overlay.of(context);
+    final entry = useState<OverlayEntry?>(null);
+    final dragPosition = useState<DotDragPosition?>(null);
+    final dragInitialOffset = useRef<Offset?>(null);
+
     return LongPressDraggable(
       dragAnchorStrategy: (draggable, context, position) {
-        final RenderBox renderObject = context.findRenderObject()! as RenderBox;
-        return renderObject.globalToLocal(position);
+        final center = RenderObjectUtils.getCenter(context);
+        dragInitialOffset.value = position;
+        return RenderObjectUtils.transformGlobalToLocal(context, center);
       },
-      feedback: ColoredBox(
-        color: Colors.green,
-        child: SizedBox.square(
-          dimension: size,
+      onDragStarted: () { 
+        final dot = RenderObjectUtils.getCenter(context);
+        final drag = dragInitialOffset.value!;
+        dragPosition.value = DotDragPosition(dot: dot, drag: drag);
+        entry.value?.remove();
+        entry.value = OverlayEntry(
+          builder: (BuildContext context) {
+            return ListenableBuilder(
+              listenable: dragPosition,
+              builder: (context, child) => DragLinePaint(position: dragPosition.value!),
+            );
+          },
+          opaque: false,
+        );
+        overlay.insert(entry.value!);
+      },
+      onDragEnd: (details) {
+        entry.value?.remove();
+        entry.value = null;
+      },
+      onDraggableCanceled: (velocity, offset) => entry.value?.remove(),
+      onDragCompleted: () => entry.value?.remove(),
+      onDragUpdate: (details) {
+        dragPosition.value = dragPosition.value!.copyWith(
+          drag: details.globalPosition,
+        );
+      },
+      feedback: ClipRRect(
+        borderRadius: BorderRadius.circular(100),
+        child: ColoredBox(
+          color: Colors.green,
+          child: SizedBox.square(
+            dimension: size,
+            child: Icon(Icons.add),
+          ),
         ),
       ),
       child: GestureDetector(
