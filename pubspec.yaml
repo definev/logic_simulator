@@ -52,6 +52,15 @@ dependencies:
   gap: ^3.0.1
   super_context_menu: ^0.6.4
 
+  # Code-gen
+  copy_with_extension: ^5.0.4
+
+  # Canvas
+  arrow_path: ^3.1.0
+
+  # Math
+  vector_math: ^2.1.4
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -66,6 +75,9 @@ dev_dependencies:
 
   # Router
   go_router_builder: ^2.3.1
+
+  # Code-gen
+  copy_with_extension_gen: ^5.0.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
