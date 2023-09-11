@@ -108,17 +108,18 @@ class BitValueDot extends HookWidget {
     super.key,
     required this.label,
     required this.value,
-    this.onToggle,
     required this.size,
+    this.onToggle,
   });
 
   final String? label;
   final Bit value;
-  final VoidCallback? onToggle;
   final double size;
+  final VoidCallback? onToggle;
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final overlay = Overlay.of(context);
     final entry = useState<OverlayEntry?>(null);
     final dragPosition = useState<DotDragPosition?>(null);
@@ -130,7 +131,7 @@ class BitValueDot extends HookWidget {
         dragInitialOffset.value = position;
         return RenderObjectUtils.transformGlobalToLocal(context, center);
       },
-      onDragStarted: () { 
+      onDragStarted: () {
         final dot = RenderObjectUtils.getCenter(context);
         final drag = dragInitialOffset.value!;
         dragPosition.value = DotDragPosition(dot: dot, drag: drag);
@@ -139,7 +140,10 @@ class BitValueDot extends HookWidget {
           builder: (BuildContext context) {
             return ListenableBuilder(
               listenable: dragPosition,
-              builder: (context, child) => DragLinePaint(position: dragPosition.value!),
+              builder: (context, child) => DragLinePaint(
+                position: dragPosition.value!,
+                enabled: value,
+              ),
             );
           },
           opaque: false,
@@ -160,7 +164,7 @@ class BitValueDot extends HookWidget {
       feedback: ClipRRect(
         borderRadius: BorderRadius.circular(100),
         child: ColoredBox(
-          color: Colors.green,
+          color: theme.colorScheme.primaryContainer,
           child: SizedBox.square(
             dimension: size,
             child: Icon(Icons.add),

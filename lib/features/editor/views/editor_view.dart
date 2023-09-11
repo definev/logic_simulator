@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:logic_simulator/features/editor/views/gate_logic_data_bar.dart';
+import 'package:logic_simulator/features/editor/views/widgets/data_connected_link_widget.dart';
 import 'package:logic_simulator/features/gates/domain/custom_gate.dart';
 import 'package:logic_simulator/features/gates/domain/logic_data.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -63,7 +64,11 @@ class GateEditor extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
+        // Logic gate
         Positioned.fill(child: SizedBox()),
+        // Link
+        Positioned.fill(child: DataConnectedLinkWidget()),
+        // Input & Output
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.stretch,
