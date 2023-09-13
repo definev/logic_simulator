@@ -18,7 +18,8 @@ class AddressInstruction extends Instruction {
     return AddressInstruction(
       from: from,
       fromIndex: fromIndex,
-      to: -1,
+      //
+      to: parent,
       toIndex: outputIndex,
     );
   }
@@ -30,8 +31,8 @@ class AddressInstruction extends Instruction {
   final int to;
   final int toIndex;
 
-  bool get isInput => to == -1;
-  bool get isOutput => from == -1;
+  bool get isInput => to == parent;
+  bool get isOutput => from == parent;
 
   @override
   String toString() => 'AddressInstruction(from: $from, fromIndex: $fromIndex, to: $to, toIndex: $toIndex)';

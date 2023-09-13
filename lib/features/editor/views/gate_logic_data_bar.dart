@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:logic_simulator/_internal/spacing.dart';
 import 'package:logic_simulator/features/editor/views/bit_dot.dart';
 import 'package:logic_simulator/features/gates/domain/custom_gate.dart';
+import 'package:logic_simulator/features/gates/domain/instruction.dart';
 import 'package:logic_simulator/features/gates/domain/logic_data.dart';
 import 'package:super_context_menu/super_context_menu.dart';
 
@@ -70,7 +71,7 @@ class GateLogicDataBar extends StatelessWidget {
             }
 
             return BitDot(
-              data: BitDotData(from: -1, index: index),
+              data: BitDotData(from: AddressInstruction.parent, index: index),
               menuProvider: menuProvider,
               mode: mode,
               label: label,
