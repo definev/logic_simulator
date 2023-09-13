@@ -39,12 +39,13 @@ class CustomGate extends LogicGate {
   void addInputInstruction(AddressInstruction instruction) {
     _inputInstructions.removeWhere((inst) => inst.to == instruction.to);
     _inputInstructions.add(instruction);
-    compute();
+    output = compute();
   }
 
   void addOutputInstruction(AddressInstruction instruction) {
     _outputInstructions.removeWhere((inst) => inst.toIndex == instruction.toIndex);
     _outputInstructions.add(instruction);
+    output = compute();
   }
 
   LogicDataLabelMap _inputLabel;
