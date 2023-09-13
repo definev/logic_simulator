@@ -23,27 +23,27 @@ class CustomGate extends LogicGate {
 
   final List<LogicGate> gates;
 
-  late List<InputInstruction> _inputInstructions;
-  late List<OutputInstruction> _outputInstructions;
+  late List<AddressInstruction> _inputInstructions;
+  late List<AddressInstruction> _outputInstructions;
   set instructions(List<Instruction> value) {
     _inputInstructions = value.fold([], (value, element) {
-      if (element is InputInstruction) value.add(element);
+      if (element is AddressInstruction) value.add(element);
       return value;
     });
     _outputInstructions = value.fold([], (value, element) {
-      if (element is OutputInstruction) value.add(element);
+      if (element is AddressInstruction && element.isOutput) value.add(element);
       return value;
     });
   }
 
-  void addInputInstruction(InputInstruction instruction) {
+  void addInputInstruction(AddressInstruction instruction) {
     _inputInstructions.removeWhere((inst) => inst.to == instruction.to);
     _inputInstructions.add(instruction);
     compute();
   }
 
-  void addOutputInstruction(OutputInstruction instruction) {
-    _outputInstructions.removeWhere((inst) => inst.outputIndex == instruction.outputIndex);
+  void addOutputInstruction(AddressInstruction instruction) {
+    _outputInstructions.removeWhere((inst) => inst.toIndex == instruction.toIndex);
     _outputInstructions.add(instruction);
   }
 
@@ -88,7 +88,7 @@ class CustomGate extends LogicGate {
   }
 
   void _executeInputInstruction(LogicData input) {
-    for (final InputInstruction(:from, :fromIndex, :to, :toIndex) in _inputInstructions) {
+    for (final AddressInstruction(:from, :fromIndex, :to, :toIndex) in _inputInstructions) {
       if (from == to) {
         final gate = gates[from];
         final newInput = gate.input;
@@ -105,7 +105,7 @@ class CustomGate extends LogicGate {
   }
 
   void _executeOutputInstruction(LogicData input) {
-    for (final OutputInstruction(:from, :fromIndex, :outputIndex) in _outputInstructions) {
+    for (final AddressInstruction(:from, :fromIndex, toIndex:outputIndex) in _outputInstructions) {
       if (from == -1) {
         final newOutput = output;
         newOutput[outputIndex] = input[fromIndex];
@@ -119,13 +119,14 @@ class CustomGate extends LogicGate {
   }
 
   void removeInputAt(int value) {
-    _inputInstructions.removeWhere((instruction) => instruction.from == 1 && instruction.fromIndex == value);
+    _inputInstructions.removeWhere((instruction) => instruction.from == AddressInstruction.parent && instruction.fromIndex == value);
+    _outputInstructions.removeWhere((instruction) => instruction.from == AddressInstruction.parent && instruction.fromIndex == value);
     final newInput = input.removeAt(value);
     input = newInput;
   }
 
   void removeOutputAt(int value) {
-    _outputInstructions.removeWhere((instruction) => instruction.outputIndex == value);
+    _outputInstructions.removeWhere((instruction) => instruction.toIndex == value);
     final newOutput = output.removeAt(value);
     output = newOutput;
   }

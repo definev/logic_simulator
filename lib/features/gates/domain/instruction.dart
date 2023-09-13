@@ -2,19 +2,37 @@ sealed class Instruction {
   const Instruction();
 }
 
-class InputInstruction extends Instruction {
-  const InputInstruction({required this.from, required this.fromIndex, required this.to, required this.toIndex});
+class AddressInstruction extends Instruction {
+  const AddressInstruction({
+    required this.from,
+    required this.fromIndex,
+    required this.to,
+    required this.toIndex,
+  });
+
+  factory AddressInstruction.output({
+    required int from,
+    required int fromIndex,
+    required int outputIndex,
+  }) {
+    return AddressInstruction(
+      from: from,
+      fromIndex: fromIndex,
+      to: -1,
+      toIndex: outputIndex,
+    );
+  }
+
+  static const parent = -1;
 
   final int from;
   final int fromIndex;
   final int to;
   final int toIndex;
-}
 
-class OutputInstruction extends Instruction {
-  const OutputInstruction({required this.from, required this.fromIndex, required this.outputIndex});
+  bool get isInput => to == -1;
+  bool get isOutput => from == -1;
 
-  final int from;
-  final int fromIndex;
-  final int outputIndex;
+  @override
+  String toString() => 'AddressInstruction(from: $from, fromIndex: $fromIndex, to: $to, toIndex: $toIndex)';
 }

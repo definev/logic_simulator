@@ -101,7 +101,7 @@ class GateEditor extends StatelessWidget {
                 onOutputReceived: (value) {
                   final (:data, :outputIndex) = value;
                   gate.addOutputInstruction(
-                    OutputInstruction(
+                    AddressInstruction.output(
                       from: data.from,
                       fromIndex: data.index,
                       outputIndex: outputIndex,
