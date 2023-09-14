@@ -1,6 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:logic_simulator/_internal/spacing.dart';
+import 'package:logic_simulator/features/editor/application/bit_dot_context_map.dart';
 import 'package:logic_simulator/features/editor/views/entity/dot_drag_position.dart';
 import 'package:logic_simulator/features/editor/views/widgets/drag_line_painter.dart';
 import 'package:logic_simulator/features/gates/domain/logic_data.dart';
@@ -18,7 +22,7 @@ class BitDotData {
 
 typedef OutputBitDotData = ({BitDotData data, int outputIndex});
 
-class BitDot extends HookWidget {
+class BitDot extends HookConsumerWidget {
   const BitDot({
     super.key,
     this.label,
@@ -44,12 +48,20 @@ class BitDot extends HookWidget {
   final EdgeInsets? padding;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final overlay = Overlay.of(context);
     final entry = useState<OverlayEntry?>(null);
     final dragPosition = useState<DotDragPosition?>(null);
     final dragInitialOffset = useRef<Offset?>(null);
+
+    useEffect(
+      () {
+        Timer.run(() => ref.read(bitDotContextMapProvider.notifier).update(data, context));
+        return () => Timer.run(() => ref.read(bitDotContextMapProvider.notifier).remove(data));
+      },
+      [context],
+    );
 
     Widget createButton() => GestureDetector(
           onTap: onToggle,
@@ -64,6 +76,7 @@ class BitDot extends HookWidget {
             ),
           ),
         );
+
     Widget child;
     switch (mode) {
       case BitDotModes.input:
@@ -118,15 +131,9 @@ class BitDot extends HookWidget {
         );
       case BitDotModes.output:
         child = DragTarget<BitDotData>(
-          onAccept: (data) {
-            print('onAccept');
-            print('data from: ${data.from}');
-            print('data index: ${data.index}');
-            onOutputReceived?.call(data);
-          },
+          onAccept: (data) => onOutputReceived?.call(data),
           builder: (context, candidateData, rejectedData) => createButton(),
         );
-        break;
     }
 
     child = Padding(
