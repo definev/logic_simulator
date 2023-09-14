@@ -25,7 +25,7 @@ class GateLogicDataBar extends StatelessWidget {
   final LogicDataLabelMap labelMap;
   final ValueChanged<ComputeableLogicData> onDataChanged;
   final ValueChanged<LogicDataLabelMap> onLabelMapChanged;
-  final ValueChanged<int> onRemoveAt;
+  final ValueChanged<(BitDotModes, int)> onRemoveAt;
   final ValueChanged<OutputBitDotData>? onOutputReceived;
   final bool allowToggle;
   final BitDotModes mode;
@@ -50,7 +50,7 @@ class GateLogicDataBar extends StatelessWidget {
             }
 
             void deleteCurrentIndex() {
-              onRemoveAt(index);
+              onRemoveAt((mode, index));
             }
 
             Menu menuProvider(MenuRequest request) {

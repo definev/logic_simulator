@@ -61,6 +61,9 @@ dependencies:
   # Math
   vector_math: ^2.1.4
 
+  # Dart-code
+  equatable: ^2.0.5
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

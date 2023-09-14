@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:logic_simulator/features/editor/application/bit_dot_context_map.dart';
 import 'package:logic_simulator/features/editor/views/entity/dot_drag_position.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -13,7 +14,7 @@ class _ConnectedLinks extends _$ConnectedLinks {
   }
 }
 
-class DataConnectedLinkWidget extends StatelessWidget {
+class DataConnectedLinkWidget extends ConsumerWidget {
   const DataConnectedLinkWidget({super.key});
 
   static void addLinkFromWidgetRef(WidgetRef ref, DotDragPosition position) {
@@ -33,7 +34,12 @@ class DataConnectedLinkWidget extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return const Placeholder();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final nodes = ref.watch(bitDotContextMapProvider);
+    return Column(
+      children: [
+        for (final MapEntry(:key, :value) in nodes.entries) Text('key: $key, value: $value'),
+      ],
+    );
   }
 }

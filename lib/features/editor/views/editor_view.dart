@@ -91,7 +91,12 @@ class GateEditor extends StatelessWidget {
                   }
                 },
                 onLabelMapChanged: (value) => gate.inputLabel = value,
-                onRemoveAt: (value) => gate.removeInputAt(value),
+                onRemoveAt: (value) => gate.removeAt(
+                  (
+                    value.$1,
+                    BitDotData(from: AddressInstruction.parent, index: value.$2),
+                  ),
+                ),
               ),
             ),
             ListenableBuilder(
@@ -100,7 +105,7 @@ class GateEditor extends StatelessWidget {
                 mode: BitDotModes.output,
                 onOutputReceived: (value) {
                   final (:data, :outputIndex) = value;
-                  gate.addOutputInstruction(
+                  gate.addAddressInstruction(
                     AddressInstruction.output(
                       from: data.from,
                       fromIndex: data.index,
@@ -113,7 +118,10 @@ class GateEditor extends StatelessWidget {
                 labelMap: gate.outputLabel,
                 onDataChanged: (value) => gate.output = value.value,
                 onLabelMapChanged: (value) => gate.outputLabel = value,
-                onRemoveAt: (value) => gate.removeOutputAt(value),
+                onRemoveAt: (value) => gate.removeAt((
+                  value.$1,
+                  BitDotData(from: AddressInstruction.parent, index: value.$2),
+                )),
               ),
             ),
           ],

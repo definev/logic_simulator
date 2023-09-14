@@ -1,5 +1,7 @@
 // ignore_for_file: invalid_use_of_visible_for_testing_member
 
+import 'package:logic_simulator/features/editor/application/bit_dot_context_map.dart';
+import 'package:logic_simulator/features/editor/views/bit_dot.dart';
 import 'package:logic_simulator/features/gates/domain/logic_data.dart';
 
 import 'instruction.dart';
@@ -10,7 +12,7 @@ typedef LogicDataLabelMap = Map<int, String>;
 class CustomGate extends LogicGate {
   CustomGate({
     required this.gates,
-    List<Instruction> instructions = const [],
+    List<AddressInstruction> instructions = const [],
     required super.input,
     required super.output,
     LogicDataLabelMap? inputLabel,
@@ -23,28 +25,14 @@ class CustomGate extends LogicGate {
 
   final List<LogicGate> gates;
 
-  late List<AddressInstruction> _inputInstructions;
-  late List<AddressInstruction> _outputInstructions;
-  set instructions(List<Instruction> value) {
-    _inputInstructions = value.fold([], (value, element) {
-      if (element is AddressInstruction) value.add(element);
-      return value;
-    });
-    _outputInstructions = value.fold([], (value, element) {
-      if (element is AddressInstruction && element.isOutput) value.add(element);
-      return value;
-    });
+  late List<AddressInstruction> _instructions;
+  set instructions(List<AddressInstruction> value) {
+    _instructions = value;
   }
 
-  void addInputInstruction(AddressInstruction instruction) {
-    _inputInstructions.removeWhere((inst) => inst.to == instruction.to);
-    _inputInstructions.add(instruction);
-    output = compute();
-  }
-
-  void addOutputInstruction(AddressInstruction instruction) {
-    _outputInstructions.removeWhere((inst) => inst.toIndex == instruction.toIndex);
-    _outputInstructions.add(instruction);
+  void addAddressInstruction(AddressInstruction instruction) {
+    _instructions.removeWhere((inst) => inst.to == instruction.to);
+    _instructions.add(instruction);
     output = compute();
   }
 
@@ -80,55 +68,49 @@ class CustomGate extends LogicGate {
 
   @override
   LogicData compute([LogicData? input]) {
-    _executeInputInstruction(input ?? this.input);
+    _executeInstructions(input ?? this.input);
     for (final gate in gates) {
       gate.output = gate.compute();
     }
-    _executeOutputInstruction(input ?? this.input);
+    _executeInstructions(input ?? this.input);
     return output;
   }
 
-  void _executeInputInstruction(LogicData input) {
-    for (final AddressInstruction(:from, :fromIndex, :to, :toIndex) in _inputInstructions) {
-      if (from == to) {
-        final gate = gates[from];
-        final newInput = gate.input;
-        newInput[toIndex] = gate.output[fromIndex];
-        input = newInput;
-      } else {
-        final fromGate = from == -1 ? this : gates[from];
-        final toGate = gates[to];
-        final newInput = toGate.input;
-        newInput[toIndex] = fromGate.output[fromIndex];
-        toGate.input = newInput;
-      }
-    }
-  }
-
-  void _executeOutputInstruction(LogicData input) {
-    for (final AddressInstruction(:from, :fromIndex, toIndex:outputIndex) in _outputInstructions) {
-      if (from == -1) {
-        final newOutput = output;
-        newOutput[outputIndex] = input[fromIndex];
-        output = newOutput;
+  void _executeInstructions(LogicData input) {
+    for (final instruction in _instructions) {
+      final AddressInstruction(:from, :fromIndex, :to, :toIndex) = instruction;
+      Bit value;
+      if (from == AddressInstruction.parent) {
+        value = input[fromIndex];
       } else {
         final fromGate = gates[from];
+        value = fromGate.input[fromIndex];
+      }
+
+      if (to == AddressInstruction.parent) {
         final newOutput = output;
-        newOutput[outputIndex] = fromGate.output[fromIndex];
+        newOutput[toIndex] = value;
+        output = newOutput;
+      } else {
+        final toGate = gates[to];
+        final newOutput = toGate.output;
+        newOutput[toIndex] = value;
+        output = newOutput;
       }
     }
   }
 
-  void removeInputAt(int value) {
-    _inputInstructions.removeWhere((instruction) => instruction.from == AddressInstruction.parent && instruction.fromIndex == value);
-    _outputInstructions.removeWhere((instruction) => instruction.from == AddressInstruction.parent && instruction.fromIndex == value);
-    final newInput = input.removeAt(value);
-    input = newInput;
-  }
+  void removeAt(ModeBitDotData data) {
+    final (mode, bitData) = data;
+    switch (mode) {
+      case BitDotModes.input:
+        _instructions.removeWhere((inst) => inst.from == bitData.from && inst.fromIndex == bitData.index);
+        silentUpdateInput(input.removeAt(bitData.index));
+        output = compute();
 
-  void removeOutputAt(int value) {
-    _outputInstructions.removeWhere((instruction) => instruction.toIndex == value);
-    final newOutput = output.removeAt(value);
-    output = newOutput;
+      case BitDotModes.output:
+        _instructions.removeWhere((inst) => inst.to == bitData.from && inst.toIndex == bitData.index);
+        output = output.removeAt(bitData.index);
+    }
   }
 }

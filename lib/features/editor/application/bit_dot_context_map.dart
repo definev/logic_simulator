@@ -1,22 +1,33 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:logic_simulator/features/editor/views/bit_dot.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'bit_dot_context_map.g.dart';
 
+typedef ModeBitDotData = (BitDotModes mode, BitDotData data);
+
 @riverpod
 class BitDotContextMap extends _$BitDotContextMap {
   @override
-  Map<BitDotData, BuildContext> build() {
+  Map<ModeBitDotData, BuildContext> build() {
     return {};
   }
 
-  void remove(BitDotData data) {
-    state = state..remove(data);
+  void remove(ModeBitDotData data) {
+    Timer.run(() {
+      final newState = {...state};
+      newState.remove(data);
+      state = newState;
+    });
   }
 
-  void update(BitDotData data, BuildContext context) {
-    state = state..[data] = context;
-    print(state);
+  void update(ModeBitDotData data, BuildContext context) {
+    Timer.run(() {
+      final newState = {...state};
+      newState[data] = context;
+      state = newState;
+    });
   }
 }
