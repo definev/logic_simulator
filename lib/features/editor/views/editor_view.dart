@@ -48,12 +48,7 @@ class EditorView extends HookConsumerWidget {
       [],
     );
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Editor'),
-      ),
-      body: GateEditor(current),
-    );
+    return GateEditor(current);
   }
 }
 
@@ -66,10 +61,10 @@ class GateEditor extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
+        Positioned.fill(child: DataConnectedLinkWidget(gate: gate)),
         // Logic gate
         Positioned.fill(child: SizedBox()),
         // Link
-        Positioned.fill(child: DataConnectedLinkWidget()),
         // Input & Output
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,

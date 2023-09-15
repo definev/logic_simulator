@@ -30,6 +30,8 @@ class CustomGate extends LogicGate {
     _instructions = value;
   }
 
+  List<AddressInstruction> get instructions => _instructions;
+
   void addAddressInstruction(AddressInstruction instruction) {
     _instructions.removeWhere((inst) => inst.to == instruction.to);
     _instructions.add(instruction);
@@ -111,6 +113,15 @@ class CustomGate extends LogicGate {
       case BitDotModes.output:
         _instructions.removeWhere((inst) => inst.to == bitData.from && inst.toIndex == bitData.index);
         output = output.removeAt(bitData.index);
+    }
+  }
+
+  Bit getInputAt(int from, int fromIndex) {
+    if (from == AddressInstruction.parent) {
+      return input[fromIndex];
+    } else {
+      final fromGate = gates[from];
+      return fromGate.input[fromIndex];
     }
   }
 }
