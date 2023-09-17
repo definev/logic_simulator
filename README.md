@@ -1,5 +1,7 @@
 # logic_simulator
 
+![Deployment](https://github.com/definev/logic_simulator/actions/workflows/main.yml/badge.svg?event=push)
+![Testing](https://github.com/definev/logic_simulator/actions/workflows/test.yml/badge.svg?event=push)
 
 ## Overview
 
