@@ -1,6 +1,8 @@
+import 'package:equatable/equatable.dart';
+
 typedef Bit = bool;
 
-final class LogicData {
+final class LogicData extends Equatable {
   const LogicData(this.length, {required List<Bit> data}) : _data = data;
 
   factory LogicData.generate(int length, Bit Function(int index) generator) {
@@ -33,16 +35,10 @@ final class LogicData {
     return LogicData.fromBits(_data);
   }
 
-  @override
-  operator ==(Object? other) {
-    if (other is LogicData) return other._data == _data;
-    return false;
-  }
-
-  @override
-  int get hashCode => _data.hashCode;
-
   LogicData reset() => LogicData.generate(length, (index) => false);
+
+  @override
+  List<Object?> get props => _data;
 }
 
 extension IntLogicDataTransformation on int {
