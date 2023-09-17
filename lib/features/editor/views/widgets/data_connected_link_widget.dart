@@ -37,12 +37,13 @@ class DataConnectedLinkWidget extends HookConsumerWidget {
     return Stack(
       children: [
         for (final instruction in listenedGate.instructions)
-          ConnectedLinkLine(
-            instruction: instruction,
-            fromNode: nodes[instruction.fromModesBitdotData]!,
-            toNode: nodes[instruction.toModesBitdotData]!,
-            enabled: gate.getInputAt(instruction.from, instruction.fromIndex),
-          ),
+          if (nodes[instruction.fromModesBitdotData] != null && nodes[instruction.toModesBitdotData] != null)
+            ConnectedLinkLine(
+              instruction: instruction,
+              fromNode: nodes[instruction.fromModesBitdotData]!,
+              toNode: nodes[instruction.toModesBitdotData]!,
+              enabled: listenedGate.getInputAt(instruction.from, instruction.fromIndex),
+            ),
       ],
     );
   }
@@ -62,7 +63,8 @@ class ConnectedLinkLine extends HookWidget {
   final BuildContext toNode;
   final bool enabled;
 
-  DotDragPosition get position {
+  DotDragPosition? get position {
+    if (!(fromNode.mounted && toNode.mounted)) return null;
     final dot = RenderObjectUtils.getCenter(fromNode);
     final drag = RenderObjectUtils.getCenter(toNode);
 
@@ -72,7 +74,7 @@ class ConnectedLinkLine extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final dragPosition = useState<DotDragPosition?>(null);
-    Timer.run(() => dragPosition.value = position);
+    Timer.run(() => dragPosition.value = position ?? dragPosition.value);
 
     return Positioned.fill(
       child: DragLinePaint(

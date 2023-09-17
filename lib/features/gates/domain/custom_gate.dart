@@ -28,12 +28,13 @@ class CustomGate extends LogicGate {
   late List<AddressInstruction> _instructions;
   set instructions(List<AddressInstruction> value) {
     _instructions = value;
+    output = compute();
   }
 
   List<AddressInstruction> get instructions => _instructions;
 
   void addAddressInstruction(AddressInstruction instruction) {
-    _instructions.removeWhere((inst) => inst.to == instruction.to);
+    _instructions.removeWhere((inst) => inst.to == instruction.to && inst.toIndex == instruction.toIndex);
     _instructions.add(instruction);
     output = compute();
   }
@@ -70,6 +71,10 @@ class CustomGate extends LogicGate {
 
   @override
   LogicData compute([LogicData? input]) {
+    for (final gate in gates) {
+      gate.silentUpdateInput(gate.input.reset());
+    }
+    output = output.reset();
     _executeInstructions(input ?? this.input);
     for (final gate in gates) {
       gate.output = gate.compute();
@@ -102,16 +107,24 @@ class CustomGate extends LogicGate {
     }
   }
 
-  void removeAt(ModeBitDotData data) {
+  void removeConnectionAt(ModeBitDotData data, {bool forceReload = false}) {
     final (mode, bitData) = data;
     switch (mode) {
       case BitDotModes.input:
         _instructions.removeWhere((inst) => inst.from == bitData.from && inst.fromIndex == bitData.index);
-        silentUpdateInput(input.removeAt(bitData.index));
-        output = compute();
-
       case BitDotModes.output:
         _instructions.removeWhere((inst) => inst.to == bitData.from && inst.toIndex == bitData.index);
+    }
+    if (forceReload) output = compute();
+  }
+
+  void removeAt(ModeBitDotData data) {
+    removeConnectionAt(data);
+    final (mode, bitData) = data;
+    switch (mode) {
+      case BitDotModes.input:
+        input = input.removeAt(bitData.index);
+      case BitDotModes.output:
         output = output.removeAt(bitData.index);
     }
   }

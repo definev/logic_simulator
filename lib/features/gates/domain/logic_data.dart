@@ -41,6 +41,8 @@ final class LogicData {
 
   @override
   int get hashCode => _data.hashCode;
+
+  LogicData reset() => LogicData.generate(length, (index) => false);
 }
 
 extension IntLogicDataTransformation on int {

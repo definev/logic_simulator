@@ -41,7 +41,7 @@ class AddressInstruction extends Instruction {
 extension AddressInstructionExt on AddressInstruction {
   ModeBitDotData get fromModesBitdotData {
     return (
-      BitDotModes.output,
+      from == AddressInstruction.parent ? BitDotModes.input : BitDotModes.output,
       BitDotData(
         from: from,
         index: fromIndex,
@@ -51,7 +51,7 @@ extension AddressInstructionExt on AddressInstruction {
 
   ModeBitDotData get toModesBitdotData {
     return (
-      BitDotModes.input,
+      to == AddressInstruction.parent ? BitDotModes.output : BitDotModes.input,
       BitDotData(
         from: to,
         index: toIndex,

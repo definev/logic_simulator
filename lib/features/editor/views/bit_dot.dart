@@ -63,7 +63,7 @@ class BitDot extends HookConsumerWidget {
       () {
         final bitDotContextMapController = ref.read(bitDotContextMapProvider.notifier);
         Timer.run(() => bitDotContextMapController.update((mode, data), context));
-        return () => bitDotContextMapController.remove((mode, data));
+        return () => Timer.run(() => bitDotContextMapController.remove((mode, data)));
       },
       [context],
     );
