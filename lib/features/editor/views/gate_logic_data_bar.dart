@@ -44,8 +44,7 @@ class GateLogicDataBar extends StatelessWidget {
 
             void toggleCurrentIndex() {
               if (!allowToggle) return;
-              final newData = data;
-              newData[index] = !value;
+              final newData = data.toggleAt(index);
               onDataChanged((value: newData, needCompute: true));
             }
 

@@ -6,7 +6,7 @@ part of 'bit_dot_context_map.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$bitDotContextMapHash() => r'5b46d3eced0f1581eeadc16a9968d4f3cecbff33';
+String _$bitDotContextMapHash() => r'30be5fbfd95a4da1592972be6eb321ffe5a452fa';
 
 /// See also [BitDotContextMap].
 @ProviderFor(BitDotContextMap)

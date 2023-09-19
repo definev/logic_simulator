@@ -112,8 +112,26 @@ class CustomGate extends LogicGate {
     switch (mode) {
       case BitDotModes.input:
         _instructions.removeWhere((inst) => inst.from == bitData.from && inst.fromIndex == bitData.index);
+        _instructions = _instructions.map((inst) {
+          if (inst.from == AddressInstruction.parent) {
+            if (inst.fromIndex > bitData.index) {
+              return inst.copyWith(fromIndex: inst.fromIndex - 1);
+            }
+          }
+          return inst;
+        }).toList();
       case BitDotModes.output:
         _instructions.removeWhere((inst) => inst.to == bitData.from && inst.toIndex == bitData.index);
+        if (bitData.from == AddressInstruction.parent) {
+          _instructions = _instructions.map((inst) {
+            if (inst.to == AddressInstruction.parent) {
+              if (inst.toIndex > bitData.index) {
+                return inst.copyWith(toIndex: inst.toIndex - 1);
+              }
+            }
+            return inst;
+          }).toList();
+        }
     }
     if (forceReload) output = compute();
   }

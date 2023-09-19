@@ -1,11 +1,16 @@
+import 'package:copy_with_extension/copy_with_extension.dart';
+import 'package:equatable/equatable.dart';
 import 'package:logic_simulator/features/editor/application/bit_dot_context_map.dart';
 import 'package:logic_simulator/features/editor/views/bit_dot.dart';
+
+part 'instruction.g.dart';
 
 sealed class Instruction {
   const Instruction();
 }
 
-class AddressInstruction extends Instruction {
+@CopyWith()
+class AddressInstruction extends Equatable implements Instruction {
   const AddressInstruction({
     required this.from,
     required this.fromIndex,
@@ -36,6 +41,9 @@ class AddressInstruction extends Instruction {
 
   @override
   String toString() => 'AddressInstruction(from: $from, fromIndex: $fromIndex, to: $to, toIndex: $toIndex)';
+
+  @override
+  List<Object?> get props => [from, fromIndex, to, toIndex];
 }
 
 extension AddressInstructionExt on AddressInstruction {

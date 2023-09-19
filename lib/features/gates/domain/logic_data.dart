@@ -39,6 +39,11 @@ final class LogicData extends Equatable {
 
   @override
   List<Object?> get props => _data;
+
+  LogicData toggleAt(int index) {
+    _data[index] = !_data[index];
+    return this;
+  }
 }
 
 extension IntLogicDataTransformation on int {
