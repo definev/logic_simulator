@@ -25,6 +25,15 @@ abstract class LogicGate extends ChangeNotifier {
   })  : _input = input,
         _output = output;
 
+  static List<LogicGate> builtInGates = [
+    ANDGate(),
+    ORGate(),
+    NORGate(),
+    NOTGate(),
+    XORGate(),
+    NANDGate(),
+  ];
+
   String get name;
   LogicData _input;
   LogicData get input => _input;
