@@ -54,16 +54,16 @@ abstract class LogicGate extends ChangeNotifier {
   LogicData compute([LogicData? input]);
 }
 
-class AndGate extends LogicGate {
-  AndGate._({
+class ANDGate extends LogicGate {
+  ANDGate._({
     required super.input,
     required super.output,
   });
 
-  factory AndGate({bool strict = true}) {
-    return AndGate._(
-      input: LogicData.fromBits([false, false]),
-      output: LogicData.fromBits([false]),
+  factory ANDGate({bool strict = true}) {
+    return ANDGate._(
+      input: LogicData.fromBits(const [false, false]),
+      output: LogicData.fromBits(const [false]),
     );
   }
 
@@ -77,16 +77,16 @@ class AndGate extends LogicGate {
   }
 }
 
-class OrGate extends LogicGate {
-  OrGate._({
+class ORGate extends LogicGate {
+  ORGate._({
     required super.input,
     required super.output,
   });
 
-  factory OrGate({bool strict = true}) {
-    return OrGate._(
-      input: LogicData.fromBits([false, false]),
-      output: LogicData.fromBits([false]),
+  factory ORGate({bool strict = true}) {
+    return ORGate._(
+      input: LogicData.fromBits(const [false, false]),
+      output: LogicData.fromBits(const [false]),
     );
   }
 
@@ -100,16 +100,16 @@ class OrGate extends LogicGate {
   }
 }
 
-class NotGate extends LogicGate {
-  NotGate._({
+class NOTGate extends LogicGate {
+  NOTGate._({
     required super.input,
     required super.output,
   });
 
-  factory NotGate({bool strict = true}) {
-    return NotGate._(
-      input: LogicData.fromBits([false]),
-      output: LogicData.fromBits([true]),
+  factory NOTGate({bool strict = true}) {
+    return NOTGate._(
+      input: LogicData.fromBits(const [false]),
+      output: LogicData.fromBits(const [true]),
     );
   }
 
@@ -120,5 +120,51 @@ class NotGate extends LogicGate {
   LogicData compute([LogicData? input]) {
     input ??= this.input;
     return LogicData.bit(!input[0]);
+  }
+}
+
+class XORGate extends LogicGate {
+  XORGate._({
+    required super.input,
+    required super.output,
+  });
+
+  factory XORGate({bool strict = true}) {
+    return XORGate._(
+      input: LogicData.fromBits(const [false, false]),
+      output: LogicData.fromBits(const [false]),
+    );
+  }
+
+  @override
+  String get name => 'XOR';
+
+  @override
+  LogicData compute([LogicData? input]) {
+    input ??= this.input;
+    return LogicData.bit(input.data.reduce((a, b) => a ^ b));
+  }
+}
+
+class NANDGate extends LogicGate {
+  NANDGate._({
+    required super.input,
+    required super.output,
+  });
+
+  factory NANDGate({bool strict = true}) {
+    return NANDGate._(
+      input: LogicData.fromBits(const [false, false]),
+      output: LogicData.fromBits(const [false]),
+    );
+  }
+
+  @override
+  String get name => 'NAND';
+
+  @override
+  LogicData compute([LogicData? input]) {
+    input ??= this.input;
+    return LogicData.bit(!input.data.reduce((a, b) => a && b));
   }
 }
