@@ -114,6 +114,35 @@ class ORGate extends LogicGate {
       );
 }
 
+class NORGate extends LogicGate {
+  NORGate._({
+    required super.input,
+    required super.output,
+  });
+
+  factory NORGate({bool strict = true}) {
+    return NORGate._(
+      input: LogicData.fromBits(const [false, false]),
+      output: LogicData.fromBits(const [false]),
+    );
+  }
+
+  @override
+  String get name => 'NOR';
+
+  @override
+  LogicData compute([LogicData? input]) {
+    input ??= this.input;
+    return LogicData.bit(!input.data.reduce((a, b) => a || b));
+  }
+
+  @override
+  LogicGate clone() => NORGate._(
+        input: input,
+        output: output,
+      );
+}
+
 class NOTGate extends LogicGate {
   NOTGate._({
     required super.input,
