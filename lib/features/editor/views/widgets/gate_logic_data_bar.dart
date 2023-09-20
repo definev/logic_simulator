@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:logic_simulator/_internal/spacing.dart';
-import 'package:logic_simulator/features/editor/views/bit_dot.dart';
+import 'package:logic_simulator/features/editor/views/widgets/bit_dot.dart';
 import 'package:logic_simulator/features/gates/domain/custom_gate.dart';
 import 'package:logic_simulator/features/gates/domain/instruction.dart';
 import 'package:logic_simulator/features/gates/domain/logic_data.dart';
