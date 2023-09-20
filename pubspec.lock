@@ -249,6 +249,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.3.2"
+  desktop_split_pane:
+    dependency: "direct main"
+    description:
+      name: desktop_split_pane
+      sha256: "5a0d72678ec0499cc11bc0389f13a936b3dbf358f5753632f3bbb9ad9d08e931"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.3"
   device_info_plus:
     dependency: transitive
     description:

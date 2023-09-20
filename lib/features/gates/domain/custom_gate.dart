@@ -1,5 +1,7 @@
 // ignore_for_file: invalid_use_of_visible_for_testing_member
 
+import 'dart:ui';
+
 import 'package:logic_simulator/features/editor/application/bit_dot_context_map.dart';
 import 'package:logic_simulator/features/editor/views/widgets/bit_dot.dart';
 import 'package:logic_simulator/features/gates/domain/logic_data.dart';
@@ -11,19 +13,37 @@ typedef LogicDataLabelMap = Map<int, String>;
 
 class CustomGate extends LogicGate {
   CustomGate({
-    required this.gates,
+    required List<LogicGate> gates,
+    required List<Offset> gatesPosition,
     List<AddressInstruction> instructions = const [],
     required super.input,
     required super.output,
     LogicDataLabelMap? inputLabel,
     LogicDataLabelMap? outputLabel,
-  })  : _inputLabel = inputLabel ?? {},
-        _outputLabel = outputLabel ?? {} {
+  })  : assert(gates.length == gatesPosition.length, 'gates and gatesPosition must have the same length'),
+        _inputLabel = inputLabel ?? {},
+        _outputLabel = outputLabel ?? {},
+        _gates = gates,
+        _gatesPosition = gatesPosition {
     gates.map((e) => e.addListener(notifyListeners));
     this.instructions = instructions;
   }
 
-  final List<LogicGate> gates;
+  final List<LogicGate> _gates;
+  List<LogicGate> get gates => _gates;
+  void removeGateAt(int index) {
+    _gates.removeAt(index);
+    _gatesPosition.removeAt(index);
+    notifyListeners();
+  }
+  void addGate(LogicGate gate, Offset position) {
+    _gates.add(gate);
+    _gatesPosition.add(position);
+    notifyListeners();
+  }
+
+  final List<Offset> _gatesPosition;
+  List<Offset> get gatesPosition => _gatesPosition;
 
   late List<AddressInstruction> _instructions;
   set instructions(List<AddressInstruction> value) {

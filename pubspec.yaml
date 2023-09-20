@@ -64,6 +64,9 @@ dependencies:
   # Dart-code
   equatable: ^2.0.5
 
+  # Desktop-specific
+  desktop_split_pane: ^1.0.3
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

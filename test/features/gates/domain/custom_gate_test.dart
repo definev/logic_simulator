@@ -12,6 +12,7 @@ CustomGate _generateCustomGate({
   List<AddressInstruction> instructions = const [],
 }) {
   final gate = CustomGate(
+    gatesPosition: [],
     gates: [],
     input: LogicData.generate(inputPinCount, (index) => false),
     output: LogicData.generate(outputPinCount, (index) => false),
@@ -26,6 +27,7 @@ void main() {
     test('Wiring input to output', () {
       final gate = CustomGate(
         gates: [],
+        gatesPosition: [],
         input: LogicData.bit(false),
         output: LogicData.bit(false),
         instructions: [
@@ -42,6 +44,7 @@ void main() {
     test('Wiring mutiple output', () {
       final gate = CustomGate(
         gates: [],
+        gatesPosition: [],
         input: LogicData.bit(false),
         output: LogicData.generate(2, (index) => false),
         instructions: [

@@ -1,11 +1,14 @@
 import 'dart:async';
 
+import 'package:desktop_split_pane/desktop_split_pane.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:logic_simulator/features/editor/views/widgets/bit_dot.dart';
-import 'package:logic_simulator/features/editor/views/widgets/gate_logic_data_bar.dart';
+import 'package:logic_simulator/features/editor/views/widgets/custom_logic_gates_field.dart';
 import 'package:logic_simulator/features/editor/views/widgets/data_connected_link_widget.dart';
+import 'package:logic_simulator/features/editor/views/widgets/gate_logic_data_bar.dart';
+import 'package:logic_simulator/features/editor/views/widgets/gates_selector.dart';
 import 'package:logic_simulator/features/gates/domain/custom_gate.dart';
 import 'package:logic_simulator/features/gates/domain/instruction.dart';
 import 'package:logic_simulator/features/gates/domain/logic_data.dart';
@@ -20,6 +23,7 @@ class EditorGate extends _$EditorGate {
     ref.onDispose(() => state.dispose());
     return CustomGate(
       gates: [],
+      gatesPosition: [],
       instructions: [],
       input: LogicData.bit(false),
       output: LogicData.bit(false),
@@ -39,6 +43,8 @@ class EditorView extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+
     final current = ref.watch(editorGateProvider);
     useEffect(
       () => switch (gate) {
@@ -49,16 +55,17 @@ class EditorView extends HookConsumerWidget {
     );
 
     return Scaffold(
-      body: Column(
-        children: [
-          SizedBox(
-            height: 100,
-            child: Placeholder(),
-          ),
-          Expanded(
-            child: GateEditor(current),
-          ),
-        ],
+      body: LayoutBuilder(
+        builder: (context, constraints) => VerticalSplitPane(
+          constraints: constraints,
+          separatorColor: theme.colorScheme.primary,
+          separatorThickness: 2,
+          fractions: const [0.9, 0.1],
+          children: [
+            GateEditor(current),
+            GatesSelector(),
+          ],
+        ),
       ),
     );
   }
@@ -75,7 +82,13 @@ class GateEditor extends StatelessWidget {
       children: [
         Positioned.fill(child: DataConnectedLinkWidget(gate: gate)),
         // Logic gate
-        Positioned.fill(child: SizedBox()),
+        Positioned.fill(
+          child: CustomLogicGatesField(
+            gate: gate,
+            onRemove: (value) {},
+            onAdd: (value) {},
+          ),
+        ),
         // Link
         // Input & Output
         Row(
