@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:logic_simulator/features/editor/views/bit_dot.dart';
+import 'package:logic_simulator/features/editor/views/widgets/bit_dot.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'bit_dot_context_map.g.dart';
