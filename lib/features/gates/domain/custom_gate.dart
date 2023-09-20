@@ -29,6 +29,19 @@ class CustomGate extends LogicGate {
     this.instructions = instructions;
   }
 
+  @override
+  CustomGate clone() {
+    return CustomGate(
+      gates: [for (final gate in gates) gate.clone()],
+      gatesPosition: [...gatesPosition],
+      input: input.clone(),
+      output: output.clone(),
+      inputLabel: Map.from(inputLabel),
+      outputLabel: Map.from(outputLabel),
+      instructions: [...instructions],
+    );
+  }
+
   final List<LogicGate> _gates;
   List<LogicGate> get gates => _gates;
   void removeGateAt(int index) {
@@ -36,14 +49,21 @@ class CustomGate extends LogicGate {
     _gatesPosition.removeAt(index);
     notifyListeners();
   }
+
   void addGate(LogicGate gate, Offset position) {
     _gates.add(gate);
     _gatesPosition.add(position);
     notifyListeners();
   }
 
-  final List<Offset> _gatesPosition;
+  List<Offset> _gatesPosition;
   List<Offset> get gatesPosition => _gatesPosition;
+  void moveGate(int gateIndex, Offset offset) {
+    final newGatesPosition = List<Offset>.from(_gatesPosition);
+    newGatesPosition[gateIndex] = offset;
+    _gatesPosition = newGatesPosition;
+    notifyListeners();
+  }
 
   late List<AddressInstruction> _instructions;
   set instructions(List<AddressInstruction> value) {
@@ -91,38 +111,25 @@ class CustomGate extends LogicGate {
 
   @override
   LogicData compute([LogicData? input]) {
-    for (final gate in gates) {
-      gate.silentUpdateInput(gate.input.reset());
-    }
-    output = output.reset();
-    _executeInstructions(input ?? this.input);
+    input ??= this.input;
+    _executeInstructions(input);
     for (final gate in gates) {
       gate.output = gate.compute();
     }
-    _executeInstructions(input ?? this.input);
+    _executeInstructions(input);
     return output;
   }
 
   void _executeInstructions(LogicData input) {
     for (final instruction in _instructions) {
-      final AddressInstruction(:from, :fromIndex, :to, :toIndex) = instruction;
-      Bit value;
-      if (from == AddressInstruction.parent) {
-        value = input[fromIndex];
-      } else {
-        final fromGate = gates[from];
-        value = fromGate.input[fromIndex];
-      }
+      final AddressInstruction(:to, :toIndex) = instruction;
+      Bit value = getValueFrom(instruction);
 
       if (to == AddressInstruction.parent) {
-        final newOutput = output;
-        newOutput[toIndex] = value;
-        output = newOutput;
+        output = output.updateAt(toIndex, value);
       } else {
         final toGate = gates[to];
-        final newOutput = toGate.output;
-        newOutput[toIndex] = value;
-        output = newOutput;
+        toGate.silentUpdateInput(toGate.input.updateAt(toIndex, value));
       }
     }
   }
@@ -167,12 +174,25 @@ class CustomGate extends LogicGate {
     }
   }
 
-  Bit getInputAt(int from, int fromIndex) {
+  Bit getValueFrom(AddressInstruction instruction) {
+    final AddressInstruction(:from, :fromIndex) = instruction;
+    Bit value;
     if (from == AddressInstruction.parent) {
-      return input[fromIndex];
+      value = input[fromIndex];
     } else {
       final fromGate = gates[from];
-      return fromGate.input[fromIndex];
+      value = fromGate.output[fromIndex];
+    }
+    return value;
+  }
+
+  Bit getValueAt(ModeBitDotData data) {
+    final (mode, bitData) = data;
+    switch (mode) {
+      case BitDotModes.input:
+        return input[bitData.index];
+      case BitDotModes.output:
+        return output[bitData.index];
     }
   }
 }
