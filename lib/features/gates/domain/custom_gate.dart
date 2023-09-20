@@ -112,6 +112,7 @@ class CustomGate extends LogicGate {
   @override
   LogicData compute([LogicData? input]) {
     input ??= this.input;
+    output = output.reset();
     _executeInstructions(input);
     for (final gate in gates) {
       gate.output = gate.compute();
