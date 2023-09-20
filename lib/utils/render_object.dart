@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
 
 class RenderObjectUtils {
-  static Offset getOrigin(BuildContext context) {
+  static Offset getOrigin(BuildContext context, [BuildContext? parent]) {
     final RenderBox renderBox = context.findRenderObject() as RenderBox;
     return renderBox.localToGlobal(Offset.zero);
   }
 
-  static Offset getCenter(BuildContext context) {
+  static Offset getCenter(BuildContext context, [BuildContext? parent]) {
     final RenderBox renderBox = context.findRenderObject() as RenderBox;
-    return renderBox.localToGlobal(renderBox.size.center(Offset.zero));
+    final globalPoint = renderBox.localToGlobal(renderBox.size.center(Offset.zero));
+    if (parent == null) return globalPoint;
+    final RenderBox parentRenderBox = parent.findRenderObject() as RenderBox;
+    final localPoint = parentRenderBox.globalToLocal(globalPoint);
+    return localPoint;
   }
 
   static Offset transformLocalToGlobal(BuildContext context, Offset point) {

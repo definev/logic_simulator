@@ -31,15 +31,23 @@ class DataConnectedLinkWidget extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final nodes = ref.watch(bitDotContextMapProvider);
+    final (:parent, contextMap: nodes) = ref.watch(bitDotContextMapProvider);
     final listenedGate = useListenable(gate);
+    useEffect(() {
+      final bitDotContextMapNotifier = ref.read(bitDotContextMapProvider.notifier);
+      Timer.run(() => bitDotContextMapNotifier.setParent(context));
+      return null;
+    }, [context]);
 
     return Stack(
       children: [
         for (final instruction in listenedGate.instructions)
-          if (nodes[instruction.fromModesBitdotData] != null && nodes[instruction.toModesBitdotData] != null)
+          if (parent != null &&
+              nodes[instruction.fromModesBitdotData] != null &&
+              nodes[instruction.toModesBitdotData] != null)
             ConnectedLinkLine(
               instruction: instruction,
+              parentContext: parent,
               fromNode: nodes[instruction.fromModesBitdotData]!,
               toNode: nodes[instruction.toModesBitdotData]!,
               enabled: listenedGate.getInputAt(instruction.from, instruction.fromIndex),
@@ -52,12 +60,14 @@ class DataConnectedLinkWidget extends HookConsumerWidget {
 class ConnectedLinkLine extends HookWidget {
   const ConnectedLinkLine({
     super.key,
+    required this.parentContext,
     required this.instruction,
     required this.fromNode,
     required this.toNode,
     required this.enabled,
   });
 
+  final BuildContext parentContext;
   final AddressInstruction instruction;
   final BuildContext fromNode;
   final BuildContext toNode;
@@ -65,8 +75,8 @@ class ConnectedLinkLine extends HookWidget {
 
   DotDragPosition? get position {
     if (!(fromNode.mounted && toNode.mounted)) return null;
-    final dot = RenderObjectUtils.getCenter(fromNode);
-    final drag = RenderObjectUtils.getCenter(toNode);
+    final dot = RenderObjectUtils.getCenter(fromNode, parentContext);
+    final drag = RenderObjectUtils.getCenter(toNode, parentContext);
 
     return DotDragPosition(dot: dot, drag: drag);
   }

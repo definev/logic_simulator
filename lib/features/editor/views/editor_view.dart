@@ -48,7 +48,19 @@ class EditorView extends HookConsumerWidget {
       [],
     );
 
-    return GateEditor(current);
+    return Scaffold(
+      body: Column(
+        children: [
+          SizedBox(
+            height: 100,
+            child: Placeholder(),
+          ),
+          Expanded(
+            child: GateEditor(current),
+          ),
+        ],
+      ),
+    );
   }
 }
 

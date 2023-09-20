@@ -5,23 +5,34 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'bit_dot_context_map.g.dart';
 
 typedef ModeBitDotData = (BitDotModes mode, BitDotData data);
+typedef BitDotContextMapData = ({BuildContext? parent, Map<ModeBitDotData, BuildContext> contextMap});
+
+extension BitDotContextMapDataX on BitDotContextMapData {
+  BitDotContextMapData copyWith({BuildContext? parent, Map<ModeBitDotData, BuildContext>? contextMap}) {
+    return (parent: parent ?? this.parent, contextMap: contextMap ?? this.contextMap);
+  }
+}
 
 @riverpod
 class BitDotContextMap extends _$BitDotContextMap {
   @override
-  Map<ModeBitDotData, BuildContext> build() {
-    return {};
+  BitDotContextMapData build() {
+    return (parent: null, contextMap: {});
+  }
+
+  void setParent(BuildContext context) {
+    state = state.copyWith(parent: context);
   }
 
   void remove(ModeBitDotData data) {
-    final newState = {...state};
+    final newState = {...state.contextMap};
     newState.remove(data);
-    state = newState;
+    state = state.copyWith(contextMap: newState);
   }
 
   void update(ModeBitDotData data, BuildContext context) {
-    final newState = {...state};
+    final newState = {...state.contextMap};
     newState[data] = context;
-    state = newState;
+    state = state.copyWith(contextMap: newState);
   }
 }
