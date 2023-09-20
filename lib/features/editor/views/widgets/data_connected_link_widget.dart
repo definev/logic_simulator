@@ -50,7 +50,7 @@ class DataConnectedLinkWidget extends HookConsumerWidget {
               parentContext: parent,
               fromNode: nodes[instruction.fromModesBitdotData]!,
               toNode: nodes[instruction.toModesBitdotData]!,
-              enabled: listenedGate.getInputAt(instruction.from, instruction.fromIndex),
+              enabled: listenedGate.getValueFrom(instruction),
             ),
       ],
     );

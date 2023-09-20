@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:logic_simulator/features/editor/views/widgets/logic_gate_widget.dart';
 import 'package:logic_simulator/features/gates/domain/custom_gate.dart';
+import 'package:logic_simulator/features/gates/domain/instruction.dart';
 import 'package:logic_simulator/features/gates/domain/logic_gate.dart';
+import 'package:logic_simulator/utils/render_object.dart';
 
 class CustomLogicGatesField extends HookWidget {
   const CustomLogicGatesField({
@@ -10,11 +12,20 @@ class CustomLogicGatesField extends HookWidget {
     required this.gate,
     required this.onRemove,
     required this.onAdd,
+    required this.onMove,
   });
 
   final CustomGate gate;
   final ValueChanged<int> onRemove;
-  final ValueChanged<LogicGate> onAdd;
+  final ValueChanged<(LogicGate, Offset)> onAdd;
+  final ValueChanged<(int, Offset)> onMove;
+
+  Offset _normalizeOffset(Offset offset, Size size) {
+    return Offset(
+      offset.dx / size.width,
+      offset.dy / size.height,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,10 +36,20 @@ class CustomLogicGatesField extends HookWidget {
       builder: (context, constraints) {
         final size = constraints.biggest;
 
+        void onGateMove(BuildContext context, BuildContext gateContext, Offset globalPosition, int gateIndex) {
+          final gateLocalPoint = RenderObjectUtils.getSize(gateContext).center(Offset.zero);
+          final canvasLocalPoint = RenderObjectUtils.transformGlobalToLocal(context, globalPosition);
+          final localPoint = canvasLocalPoint - gateLocalPoint;
+
+          final nomalizedPoint = _normalizeOffset(localPoint, size);
+          onMove((gateIndex, nomalizedPoint));
+        }
+
         return DragTarget<LogicGate>(
           onAcceptWithDetails: (details) {
-            print(details.data);
-            print(details.offset);
+            final localPoint = RenderObjectUtils.transformGlobalToLocal(context, details.offset);
+            final nomalizedPoint = _normalizeOffset(localPoint, size);
+            onAdd((details.data.clone(), nomalizedPoint));
           },
           builder: (context, candidateData, rejectedData) => Stack(
             children: [
@@ -37,9 +58,18 @@ class CustomLogicGatesField extends HookWidget {
                   textDirection: TextDirection.ltr,
                   top: position.dy * size.height,
                   start: position.dx * size.width,
-                  child: LogicGateWidget(
-                    gates[gateIndex],
-                    gateIndex: gateIndex,
+                  child: Builder(
+                    builder: (gateContext) => GestureDetector(
+                      onPanStart: (details) => onGateMove(context, gateContext, details.globalPosition, gateIndex),
+                      onPanUpdate: (details) => onGateMove(context, gateContext, details.globalPosition, gateIndex),
+                      child: LogicGateWidget(
+                        gates[gateIndex],
+                        gateIndex: gateIndex,
+                        onOutputReceived: (value) => gate.addAddressInstruction(
+                          AddressInstruction.fromBitDotDataPair(value),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
             ],

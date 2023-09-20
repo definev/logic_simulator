@@ -26,7 +26,6 @@ final class LogicData extends Equatable {
   List<Bit> get data => _data;
 
   Bit operator [](int index) => _data[index];
-  operator []=(int index, Bit value) => _data[index] = value;
 
   LogicData operator +(LogicData other) => LogicData.merge(this, other);
 
@@ -35,15 +34,23 @@ final class LogicData extends Equatable {
     return LogicData.fromBits(_data);
   }
 
-  LogicData reset() => LogicData.generate(length, (index) => false);
-
-  @override
-  List<Object?> get props => _data;
+  LogicData updateAt(int index, Bit bit) {
+    final data = [..._data];
+    data[index] = bit;
+    return LogicData.fromBits(data);
+  }
 
   LogicData toggleAt(int index) {
     _data[index] = !_data[index];
     return this;
   }
+
+  LogicData reset() => LogicData.generate(length, (index) => false);
+
+  LogicData clone() => LogicData.fromBits([..._data]);
+
+  @override
+  List<Object?> get props => _data;
 }
 
 extension IntLogicDataTransformation on int {

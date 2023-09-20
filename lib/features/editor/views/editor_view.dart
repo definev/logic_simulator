@@ -84,10 +84,16 @@ class GateEditor extends StatelessWidget {
         // Logic gate
         Positioned.fill(
           child: CustomLogicGatesField(
-            gate: gate,
-            onRemove: (value) {},
-            onAdd: (value) {},
-          ),
+              gate: gate,
+              onRemove: (value) => gate.removeGateAt(value),
+              onAdd: (value) {
+                final (logicGate, offset) = value;
+                gate.addGate(logicGate, offset);
+              },
+              onMove: (value) {
+                final (gateIndex, offset) = value;
+                gate.moveGate(gateIndex, offset);
+              }),
         ),
         // Link
         // Input & Output
