@@ -30,7 +30,7 @@ abstract class LogicGate extends ChangeNotifier {
   LogicData get input => _input;
   set input(LogicData data) {
     _input = data;
-    _output = compute(data);
+    _output = compute();
     notifyListeners();
   }
 
@@ -52,6 +52,8 @@ abstract class LogicGate extends ChangeNotifier {
   }
 
   LogicData compute([LogicData? input]);
+
+  LogicGate clone();
 }
 
 class ANDGate extends LogicGate {
@@ -75,6 +77,12 @@ class ANDGate extends LogicGate {
     input ??= this.input;
     return LogicData.bit(input.data.reduce((a, b) => a && b));
   }
+
+  @override
+  ANDGate clone() => ANDGate._(
+        input: input,
+        output: output,
+      );
 }
 
 class ORGate extends LogicGate {
@@ -98,6 +106,12 @@ class ORGate extends LogicGate {
     input ??= this.input;
     return LogicData.bit(input.data.reduce((a, b) => a || b));
   }
+
+  @override
+  LogicGate clone() => ORGate._(
+        input: input,
+        output: output,
+      );
 }
 
 class NOTGate extends LogicGate {
@@ -121,6 +135,12 @@ class NOTGate extends LogicGate {
     input ??= this.input;
     return LogicData.bit(!input[0]);
   }
+
+  @override
+  LogicGate clone() => NOTGate._(
+        input: input,
+        output: output,
+      );
 }
 
 class XORGate extends LogicGate {
@@ -144,6 +164,12 @@ class XORGate extends LogicGate {
     input ??= this.input;
     return LogicData.bit(input.data.reduce((a, b) => a ^ b));
   }
+
+  @override
+  LogicGate clone() => XORGate._(
+        input: input,
+        output: output,
+      );
 }
 
 class NANDGate extends LogicGate {
@@ -167,4 +193,10 @@ class NANDGate extends LogicGate {
     input ??= this.input;
     return LogicData.bit(!input.data.reduce((a, b) => a && b));
   }
+
+  @override
+  LogicGate clone() => NANDGate._(
+        input: input,
+        output: output,
+      );
 }
