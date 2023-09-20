@@ -15,6 +15,11 @@ class RenderObjectUtils {
     return localPoint;
   }
 
+  static Size getSize(BuildContext context) {
+    final RenderBox renderBox = context.findRenderObject() as RenderBox;
+    return renderBox.size;
+  }
+
   static Offset transformLocalToGlobal(BuildContext context, Offset point) {
     final RenderBox renderBox = context.findRenderObject() as RenderBox;
     return renderBox.localToGlobal(point);
