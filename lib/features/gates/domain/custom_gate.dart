@@ -1,7 +1,7 @@
 // ignore_for_file: invalid_use_of_visible_for_testing_member
 
 import 'package:logic_simulator/features/editor/application/bit_dot_context_map.dart';
-import 'package:logic_simulator/features/editor/views/bit_dot.dart';
+import 'package:logic_simulator/features/editor/views/widgets/bit_dot.dart';
 import 'package:logic_simulator/features/gates/domain/logic_data.dart';
 
 import 'instruction.dart';

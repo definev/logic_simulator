@@ -1,7 +1,7 @@
 import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:equatable/equatable.dart';
 import 'package:logic_simulator/features/editor/application/bit_dot_context_map.dart';
-import 'package:logic_simulator/features/editor/views/bit_dot.dart';
+import 'package:logic_simulator/features/editor/views/widgets/bit_dot.dart';
 
 part 'instruction.g.dart';
 
