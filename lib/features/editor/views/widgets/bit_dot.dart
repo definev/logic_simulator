@@ -8,6 +8,7 @@ import 'package:logic_simulator/_internal/spacing.dart';
 import 'package:logic_simulator/features/editor/application/bit_dot_context_map.dart';
 import 'package:logic_simulator/features/editor/views/entity/dot_drag_position.dart';
 import 'package:logic_simulator/features/editor/views/widgets/drag_line_painter.dart';
+import 'package:logic_simulator/features/gates/domain/instruction.dart';
 import 'package:logic_simulator/features/gates/domain/logic_data.dart';
 import 'package:logic_simulator/utils/render_object.dart';
 import 'package:super_context_menu/super_context_menu.dart';
@@ -19,12 +20,14 @@ class BitDotData extends Equatable {
 
   final int from;
   final int index;
-  
+
   @override
   List<Object?> get props => [from, index];
 }
 
 typedef OutputBitDotData = ({BitDotData data, int outputIndex});
+
+typedef BitDotDataPair = ({BitDotData from, BitDotData to});
 
 class BitDot extends HookConsumerWidget {
   const BitDot({
@@ -84,7 +87,8 @@ class BitDot extends HookConsumerWidget {
 
     Widget child;
     switch (mode) {
-      case BitDotModes.input:
+      case BitDotModes.input when data.from == AddressInstruction.parent:
+      case BitDotModes.output when data.from != AddressInstruction.parent:
         child = Draggable<BitDotData>(
           data: data,
           dragAnchorStrategy: (draggable, context, position) {
@@ -134,11 +138,14 @@ class BitDot extends HookConsumerWidget {
           ),
           child: createButton(),
         );
-      case BitDotModes.output:
+      case BitDotModes.input when data.from != AddressInstruction.parent:
+      case BitDotModes.output when data.from == AddressInstruction.parent:
         child = DragTarget<BitDotData>(
           onAccept: (data) => onOutputReceived?.call(data),
           builder: (context, candidateData, rejectedData) => createButton(),
         );
+      default:
+        throw UnimplementedError();
     }
 
     child = Padding(
