@@ -32,6 +32,16 @@ class AddressInstruction extends Equatable implements Instruction {
     );
   }
 
+  factory AddressInstruction.fromBitDotDataPair(BitDotDataPair pair) {
+    return AddressInstruction(
+      from: pair.from.from,
+      fromIndex: pair.from.index,
+      //
+      to: pair.to.from,
+      toIndex: pair.to.index,
+    );
+  }
+
   static const parent = -1;
 
   final int from;
