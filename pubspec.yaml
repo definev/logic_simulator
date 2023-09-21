@@ -56,6 +56,9 @@ dependencies:
   copy_with_extension: ^5.0.4
   json_annotation: ^4.8.1
 
+  # Json serialization
+  osum_serializable: ^0.0.5
+
   # Canvas
   arrow_path: ^3.1.0
 
@@ -86,6 +89,7 @@ dev_dependencies:
   # Code-gen
   copy_with_extension_gen: ^5.0.4
   json_serializable: ^6.7.1
+  crimson: ^0.3.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

@@ -2,24 +2,33 @@
 
 import 'dart:ui';
 
+import 'package:json_annotation/json_annotation.dart';
 import 'package:logic_simulator/features/editor/application/bit_dot_context_map.dart';
 import 'package:logic_simulator/features/editor/views/widgets/bit_dot.dart';
 import 'package:logic_simulator/features/gates/domain/logic_data.dart';
+import 'package:osum_serializable/osum_serializable.dart';
 
 import 'instruction.dart';
 import 'logic_gate.dart';
 
+part 'custom_gate.g.dart';
+
 typedef LogicDataLabelMap = Map<int, String>;
 
+@JsonSerializable()
+@OffsetConverter()
+@LogicGateConverter()
+@LogicDataConverter()
 class CustomGate extends LogicGate {
   CustomGate({
     required List<LogicGate> gates,
     required List<Offset> gatesPosition,
     List<AddressInstruction> instructions = const [],
-    required super.input,
-    required super.output,
     LogicDataLabelMap? inputLabel,
     LogicDataLabelMap? outputLabel,
+    super.type = LogicGateType.custom,
+    required super.input,
+    required super.output,
   })  : assert(gates.length == gatesPosition.length, 'gates and gatesPosition must have the same length'),
         _inputLabel = inputLabel ?? {},
         _outputLabel = outputLabel ?? {},
@@ -28,6 +37,9 @@ class CustomGate extends LogicGate {
     gates.map((e) => e.addListener(notifyListeners));
     this.instructions = instructions;
   }
+
+  factory CustomGate.fromJson(Map<String, dynamic> json) => _$CustomGateFromJson(json);
+  Map<String, dynamic> toJson() => _$CustomGateToJson(this);
 
   @override
   CustomGate clone() {

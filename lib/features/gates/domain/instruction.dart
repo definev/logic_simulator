@@ -1,5 +1,6 @@
 import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:equatable/equatable.dart';
+import 'package:json_annotation/json_annotation.dart';
 import 'package:logic_simulator/features/editor/application/bit_dot_context_map.dart';
 import 'package:logic_simulator/features/editor/views/widgets/bit_dot.dart';
 
@@ -9,6 +10,7 @@ sealed class Instruction {
   const Instruction();
 }
 
+@JsonSerializable()
 @CopyWith()
 class AddressInstruction extends Equatable implements Instruction {
   const AddressInstruction({
@@ -41,6 +43,9 @@ class AddressInstruction extends Equatable implements Instruction {
       toIndex: pair.to.index,
     );
   }
+
+  factory AddressInstruction.fromJson(Map<String, dynamic> json) => _$AddressInstructionFromJson(json);
+  Map<String, dynamic> toJson() => _$AddressInstructionToJson(this);
 
   static const parent = -1;
 

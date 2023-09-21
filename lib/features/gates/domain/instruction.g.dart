@@ -88,3 +88,23 @@ extension $AddressInstructionCopyWith on AddressInstruction {
   _$AddressInstructionCWProxy get copyWith =>
       _$AddressInstructionCWProxyImpl(this);
 }
+
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+AddressInstruction _$AddressInstructionFromJson(Map<String, dynamic> json) =>
+    AddressInstruction(
+      from: json['from'] as int,
+      fromIndex: json['from_index'] as int,
+      to: json['to'] as int,
+      toIndex: json['to_index'] as int,
+    );
+
+Map<String, dynamic> _$AddressInstructionToJson(AddressInstruction instance) =>
+    <String, dynamic>{
+      'from': instance.from,
+      'from_index': instance.fromIndex,
+      'to': instance.to,
+      'to_index': instance.toIndex,
+    };

@@ -1,5 +1,8 @@
+// ignore_for_file: unused_element
+
 import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:logic_simulator/features/gates/domain/custom_gate.dart';
 
 import 'logic_data.dart';
 
@@ -21,11 +24,61 @@ class LogicException implements Exception {
   String toString() => message;
 }
 
+enum LogicGateType {
+  and,
+  or,
+  nor,
+  not,
+  xor,
+  nand,
+  custom,
+}
+
+class LogicGateConverter extends JsonConverter<LogicGate, Map<String, dynamic>> {
+  const LogicGateConverter();
+
+  @override
+  LogicGate fromJson(Map<String, dynamic> json) {
+    final type = LogicGateType.values.asNameMap()[json['type']]!;
+    switch (type) {
+      case LogicGateType.and:
+        return ANDGate.fromJson(json);
+      case LogicGateType.or:
+        return ORGate.fromJson(json);
+      case LogicGateType.nor:
+        return NORGate.fromJson(json);
+      case LogicGateType.not:
+        return NOTGate.fromJson(json);
+      case LogicGateType.xor:
+        return XORGate.fromJson(json);
+      case LogicGateType.nand:
+        return NANDGate.fromJson(json);
+      case LogicGateType.custom:
+        return CustomGate.fromJson(json);
+    }
+  }
+
+  @override
+  Map<String, dynamic> toJson(LogicGate object) {
+    return switch (object.type) {
+      LogicGateType.and => (object as ANDGate).toJson(),
+      LogicGateType.or => (object as ORGate).toJson(),
+      LogicGateType.nor => (object as NORGate).toJson(),
+      LogicGateType.not => (object as NOTGate).toJson(),
+      LogicGateType.xor => (object as XORGate).toJson(),
+      LogicGateType.nand => (object as NANDGate).toJson(),
+      LogicGateType.custom => (object as CustomGate).toJson(),
+    };
+  }
+}
+
 abstract class LogicGate extends ChangeNotifier {
   LogicGate({
+    required LogicGateType type,
     required LogicData input,
     required LogicData output,
-  })  : _input = input,
+  })  : _type = type,
+        _input = input,
         _output = output;
 
   static List<LogicGate> builtInGates = [
@@ -37,8 +90,16 @@ abstract class LogicGate extends ChangeNotifier {
     NANDGate(),
   ];
 
+  // ignore: prefer_final_fields
+  LogicGateType _type;
+  LogicGateType get type => _type;
+  set type(LogicGateType data) {
+    _type = data;
+  }
+
   String get name;
   LogicData _input;
+  @LogicDataConverter()
   LogicData get input => _input;
   set input(LogicData data) {
     _input = data;
@@ -52,12 +113,12 @@ abstract class LogicGate extends ChangeNotifier {
   }
 
   LogicData _output;
+  @LogicDataConverter()
   LogicData get output => _output;
   set output(LogicData data) {
     _output = data;
     notifyListeners();
   }
-
 
   void silentUpdateOutput(LogicData data) {
     _output = data;
@@ -73,7 +134,7 @@ class ANDGate extends LogicGate {
   ANDGate._({
     required super.input,
     required super.output,
-  });
+  }) : super(type: LogicGateType.and);
 
   factory ANDGate({bool strict = true}) {
     return ANDGate._(
@@ -106,7 +167,7 @@ class ORGate extends LogicGate {
   ORGate._({
     required super.input,
     required super.output,
-  });
+  }) : super(type: LogicGateType.or);
 
   factory ORGate({bool strict = true}) {
     return ORGate._(
@@ -139,7 +200,7 @@ class NORGate extends LogicGate {
   NORGate._({
     required super.input,
     required super.output,
-  });
+  }) : super(type: LogicGateType.nor);
 
   factory NORGate({bool strict = true}) {
     return NORGate._(
@@ -172,7 +233,7 @@ class NOTGate extends LogicGate {
   NOTGate._({
     required super.input,
     required super.output,
-  });
+  }) : super(type: LogicGateType.not);
 
   factory NOTGate({bool strict = true}) {
     return NOTGate._(
@@ -205,7 +266,7 @@ class XORGate extends LogicGate {
   XORGate._({
     required super.input,
     required super.output,
-  });
+  }) : super(type: LogicGateType.xor);
 
   factory XORGate({bool strict = true}) {
     return XORGate._(
@@ -238,7 +299,7 @@ class NANDGate extends LogicGate {
   NANDGate._({
     required super.input,
     required super.output,
-  });
+  }) : super(type: LogicGateType.nand);
 
   factory NANDGate({bool strict = true}) {
     return NANDGate._(

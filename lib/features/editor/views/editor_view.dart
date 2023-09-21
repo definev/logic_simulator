@@ -12,6 +12,7 @@ import 'package:logic_simulator/features/editor/views/widgets/gates_selector.dar
 import 'package:logic_simulator/features/gates/domain/custom_gate.dart';
 import 'package:logic_simulator/features/gates/domain/instruction.dart';
 import 'package:logic_simulator/features/gates/domain/logic_data.dart';
+import 'package:logic_simulator/utils/json.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'editor_view.g.dart';
@@ -47,9 +48,13 @@ class EditorView extends HookConsumerWidget {
 
     final current = ref.watch(editorGateProvider);
     useEffect(
-      () => switch (gate) {
-        final gate? => () => Timer.run(() => ref.read(editorGateProvider.notifier).setGate(gate)),
-        null => null,
+      switch (gate) {
+        final gate? => () {
+            final editorGateNotifier = ref.read(editorGateProvider.notifier);
+            Timer.run(() => editorGateNotifier.setGate(gate));
+            return;
+          },
+        null => () => null,
       },
       [],
     );
@@ -60,10 +65,16 @@ class EditorView extends HookConsumerWidget {
           constraints: constraints,
           separatorColor: theme.colorScheme.primary,
           separatorThickness: 2,
-          fractions: const [0.9, 0.1],
+          fractions: const [0.8, 0.1, 0.1],
           children: [
             GateEditor(current),
             GatesSelector(),
+            ElevatedButton(
+              onPressed: () {
+                JsonUtils.print(current.toJson());
+              },
+              child: Text('Print json'),
+            ),
           ],
         ),
       ),

@@ -201,6 +201,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.0.4"
+  crimson:
+    dependency: "direct dev"
+    description:
+      name: crimson
+      sha256: "749eaa39e30972c5454ccdef11fcb56d8ec89b9b6c477ae998c4e7ccfd195ac2"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.1"
   crypto:
     dependency: transitive
     description:
@@ -552,6 +560,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.4"
+  osum_serializable:
+    dependency: "direct main"
+    description:
+      name: osum_serializable
+      sha256: "703922d16c86c69840db3449f97956b7a73313bcda67ea93524719598c2cf757"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.5"
   package_config:
     dependency: transitive
     description:

@@ -1,11 +1,22 @@
 import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-part 'logic_data.g.dart';
-
 typedef Bit = bool;
 
-@JsonSerializable()
+class LogicDataConverter extends JsonConverter<LogicData, List<Bit>> {
+  const LogicDataConverter();
+
+  @override
+  LogicData fromJson(List<Bit> json) {
+    return LogicData.fromBits(json);
+  }
+
+  @override
+  List<Bit> toJson(LogicData object) {
+    return object.data;
+  }
+}
+
 final class LogicData extends Equatable {
   const LogicData(this.length, {required List<Bit> data}) : _data = data;
 
@@ -24,9 +35,6 @@ final class LogicData extends Equatable {
   factory LogicData.merge(LogicData a, LogicData b) {
     return LogicData(a.length + b.length, data: [...a.data, ...b.data]);
   }
-
-  factory LogicData.fromJson(Map<String, dynamic> json) => _$LogicDataFromJson(json);
-  Map<String, dynamic> toJson() => _$LogicDataToJson(this);
 
   final int length;
   final List<Bit> _data;

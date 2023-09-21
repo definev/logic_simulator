@@ -7,55 +7,77 @@ part of 'logic_gate.dart';
 // **************************************************************************
 
 ANDGate _$ANDGateFromJson(Map<String, dynamic> json) => ANDGate()
-  ..input = LogicData.fromJson(json['input'] as Map<String, dynamic>)
-  ..output = LogicData.fromJson(json['output'] as Map<String, dynamic>);
+  ..type = $enumDecode(_$LogicGateTypeEnumMap, json['type'])
+  ..input = const LogicDataConverter().fromJson(json['input'] as List<bool>)
+  ..output = const LogicDataConverter().fromJson(json['output'] as List<bool>);
 
 Map<String, dynamic> _$ANDGateToJson(ANDGate instance) => <String, dynamic>{
-      'input': instance.input,
-      'output': instance.output,
+      'type': _$LogicGateTypeEnumMap[instance.type]!,
+      'input': const LogicDataConverter().toJson(instance.input),
+      'output': const LogicDataConverter().toJson(instance.output),
     };
 
+const _$LogicGateTypeEnumMap = {
+  LogicGateType.and: 'and',
+  LogicGateType.or: 'or',
+  LogicGateType.nor: 'nor',
+  LogicGateType.not: 'not',
+  LogicGateType.xor: 'xor',
+  LogicGateType.nand: 'nand',
+  LogicGateType.custom: 'custom',
+};
+
 ORGate _$ORGateFromJson(Map<String, dynamic> json) => ORGate()
-  ..input = LogicData.fromJson(json['input'] as Map<String, dynamic>)
-  ..output = LogicData.fromJson(json['output'] as Map<String, dynamic>);
+  ..type = $enumDecode(_$LogicGateTypeEnumMap, json['type'])
+  ..input = const LogicDataConverter().fromJson(json['input'] as List<bool>)
+  ..output = const LogicDataConverter().fromJson(json['output'] as List<bool>);
 
 Map<String, dynamic> _$ORGateToJson(ORGate instance) => <String, dynamic>{
-      'input': instance.input,
-      'output': instance.output,
+      'type': _$LogicGateTypeEnumMap[instance.type]!,
+      'input': const LogicDataConverter().toJson(instance.input),
+      'output': const LogicDataConverter().toJson(instance.output),
     };
 
 NORGate _$NORGateFromJson(Map<String, dynamic> json) => NORGate()
-  ..input = LogicData.fromJson(json['input'] as Map<String, dynamic>)
-  ..output = LogicData.fromJson(json['output'] as Map<String, dynamic>);
+  ..type = $enumDecode(_$LogicGateTypeEnumMap, json['type'])
+  ..input = const LogicDataConverter().fromJson(json['input'] as List<bool>)
+  ..output = const LogicDataConverter().fromJson(json['output'] as List<bool>);
 
 Map<String, dynamic> _$NORGateToJson(NORGate instance) => <String, dynamic>{
-      'input': instance.input,
-      'output': instance.output,
+      'type': _$LogicGateTypeEnumMap[instance.type]!,
+      'input': const LogicDataConverter().toJson(instance.input),
+      'output': const LogicDataConverter().toJson(instance.output),
     };
 
 NOTGate _$NOTGateFromJson(Map<String, dynamic> json) => NOTGate()
-  ..input = LogicData.fromJson(json['input'] as Map<String, dynamic>)
-  ..output = LogicData.fromJson(json['output'] as Map<String, dynamic>);
+  ..type = $enumDecode(_$LogicGateTypeEnumMap, json['type'])
+  ..input = const LogicDataConverter().fromJson(json['input'] as List<bool>)
+  ..output = const LogicDataConverter().fromJson(json['output'] as List<bool>);
 
 Map<String, dynamic> _$NOTGateToJson(NOTGate instance) => <String, dynamic>{
-      'input': instance.input,
-      'output': instance.output,
+      'type': _$LogicGateTypeEnumMap[instance.type]!,
+      'input': const LogicDataConverter().toJson(instance.input),
+      'output': const LogicDataConverter().toJson(instance.output),
     };
 
 XORGate _$XORGateFromJson(Map<String, dynamic> json) => XORGate()
-  ..input = LogicData.fromJson(json['input'] as Map<String, dynamic>)
-  ..output = LogicData.fromJson(json['output'] as Map<String, dynamic>);
+  ..type = $enumDecode(_$LogicGateTypeEnumMap, json['type'])
+  ..input = const LogicDataConverter().fromJson(json['input'] as List<bool>)
+  ..output = const LogicDataConverter().fromJson(json['output'] as List<bool>);
 
 Map<String, dynamic> _$XORGateToJson(XORGate instance) => <String, dynamic>{
-      'input': instance.input,
-      'output': instance.output,
+      'type': _$LogicGateTypeEnumMap[instance.type]!,
+      'input': const LogicDataConverter().toJson(instance.input),
+      'output': const LogicDataConverter().toJson(instance.output),
     };
 
 NANDGate _$NANDGateFromJson(Map<String, dynamic> json) => NANDGate()
-  ..input = LogicData.fromJson(json['input'] as Map<String, dynamic>)
-  ..output = LogicData.fromJson(json['output'] as Map<String, dynamic>);
+  ..type = $enumDecode(_$LogicGateTypeEnumMap, json['type'])
+  ..input = const LogicDataConverter().fromJson(json['input'] as List<bool>)
+  ..output = const LogicDataConverter().fromJson(json['output'] as List<bool>);
 
 Map<String, dynamic> _$NANDGateToJson(NANDGate instance) => <String, dynamic>{
-      'input': instance.input,
-      'output': instance.output,
+      'type': _$LogicGateTypeEnumMap[instance.type]!,
+      'input': const LogicDataConverter().toJson(instance.input),
+      'output': const LogicDataConverter().toJson(instance.output),
     };
