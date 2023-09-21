@@ -6,7 +6,7 @@ part of 'editor_view.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$editorGateHash() => r'fe94bac52908a59876c07b8ddad0f122c62fdef7';
+String _$editorGateHash() => r'04a02513b82a58b5c1dfe6e7089996d3d68c4c03';
 
 /// See also [EditorGate].
 @ProviderFor(EditorGate)

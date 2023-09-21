@@ -6,7 +6,7 @@ part of 'saved_gates.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$savedGatesHash() => r'32c02c31427c8e96c66106f362c629e3d4e80bb0';
+String _$savedGatesHash() => r'5be8a0ec7071aa86f63cb9acd8cb8077823eecba';
 
 /// See also [savedGates].
 @ProviderFor(savedGates)

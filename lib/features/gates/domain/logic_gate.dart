@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:json_annotation/json_annotation.dart';
 
 import 'logic_data.dart';
+
+part 'logic_gate.g.dart';
 
 class LogicException implements Exception {
   const LogicException._(this.message);
@@ -49,12 +52,12 @@ abstract class LogicGate extends ChangeNotifier {
   }
 
   LogicData _output;
+  LogicData get output => _output;
   set output(LogicData data) {
     _output = data;
     notifyListeners();
   }
 
-  LogicData get output => _output;
 
   void silentUpdateOutput(LogicData data) {
     _output = data;
@@ -65,6 +68,7 @@ abstract class LogicGate extends ChangeNotifier {
   LogicGate clone();
 }
 
+@JsonSerializable()
 class ANDGate extends LogicGate {
   ANDGate._({
     required super.input,
@@ -77,6 +81,9 @@ class ANDGate extends LogicGate {
       output: LogicData.fromBits(const [false]),
     );
   }
+
+  factory ANDGate.fromJson(Map<String, dynamic> json) => _$ANDGateFromJson(json);
+  Map<String, dynamic> toJson() => _$ANDGateToJson(this);
 
   @override
   String get name => 'AND';
@@ -94,6 +101,7 @@ class ANDGate extends LogicGate {
       );
 }
 
+@JsonSerializable()
 class ORGate extends LogicGate {
   ORGate._({
     required super.input,
@@ -106,6 +114,9 @@ class ORGate extends LogicGate {
       output: LogicData.fromBits(const [false]),
     );
   }
+
+  factory ORGate.fromJson(Map<String, dynamic> json) => _$ORGateFromJson(json);
+  Map<String, dynamic> toJson() => _$ORGateToJson(this);
 
   @override
   String get name => 'OR';
@@ -123,6 +134,7 @@ class ORGate extends LogicGate {
       );
 }
 
+@JsonSerializable()
 class NORGate extends LogicGate {
   NORGate._({
     required super.input,
@@ -135,6 +147,9 @@ class NORGate extends LogicGate {
       output: LogicData.fromBits(const [false]),
     );
   }
+
+  factory NORGate.fromJson(Map<String, dynamic> json) => _$NORGateFromJson(json);
+  Map<String, dynamic> toJson() => _$NORGateToJson(this);
 
   @override
   String get name => 'NOR';
@@ -152,6 +167,7 @@ class NORGate extends LogicGate {
       );
 }
 
+@JsonSerializable()
 class NOTGate extends LogicGate {
   NOTGate._({
     required super.input,
@@ -164,6 +180,9 @@ class NOTGate extends LogicGate {
       output: LogicData.fromBits(const [true]),
     );
   }
+
+  factory NOTGate.fromJson(Map<String, dynamic> json) => _$NOTGateFromJson(json);
+  Map<String, dynamic> toJson() => _$NOTGateToJson(this);
 
   @override
   String get name => 'NOT';
@@ -181,6 +200,7 @@ class NOTGate extends LogicGate {
       );
 }
 
+@JsonSerializable()
 class XORGate extends LogicGate {
   XORGate._({
     required super.input,
@@ -193,6 +213,9 @@ class XORGate extends LogicGate {
       output: LogicData.fromBits(const [false]),
     );
   }
+
+  factory XORGate.fromJson(Map<String, dynamic> json) => _$XORGateFromJson(json);
+  Map<String, dynamic> toJson() => _$XORGateToJson(this);
 
   @override
   String get name => 'XOR';
@@ -210,6 +233,7 @@ class XORGate extends LogicGate {
       );
 }
 
+@JsonSerializable()
 class NANDGate extends LogicGate {
   NANDGate._({
     required super.input,
@@ -222,6 +246,9 @@ class NANDGate extends LogicGate {
       output: LogicData.fromBits(const [false]),
     );
   }
+
+  factory NANDGate.fromJson(Map<String, dynamic> json) => _$NANDGateFromJson(json);
+  Map<String, dynamic> toJson() => _$NANDGateToJson(this);
 
   @override
   String get name => 'NAND';
