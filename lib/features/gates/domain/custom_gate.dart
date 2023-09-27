@@ -130,6 +130,12 @@ class CustomGate extends LogicGate {
       gate.output = gate.compute();
     }
     _executeInstructions(input);
+    // Re-compute the output to make sure the output is correct
+    for (final gate in gates) {
+      gate.output = gate.compute();
+    }
+    // Arrange the output
+    _executeInstructions(input);
     return output;
   }
 
