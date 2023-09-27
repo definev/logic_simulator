@@ -1,0 +1,163 @@
+{
+    "type": "custom",
+    "input": [
+        false,
+        false,
+        false
+    ],
+    "output": [
+        false,
+        false
+    ],
+    "gates": [
+        {
+            "type": "xor",
+            "input": [
+                false,
+                false
+            ],
+            "output": [
+                false
+            ]
+        },
+        {
+            "type": "xor",
+            "input": [
+                false,
+                false
+            ],
+            "output": [
+                false
+            ]
+        },
+        {
+            "type": "and",
+            "input": [
+                false,
+                false
+            ],
+            "output": [
+                false
+            ]
+        },
+        {
+            "type": "and",
+            "input": [
+                false,
+                false
+            ],
+            "output": [
+                false
+            ]
+        },
+        {
+            "type": "or",
+            "input": [
+                false,
+                false
+            ],
+            "output": [
+                false
+            ]
+        }
+    ],
+    "gates_position": [
+        [
+            0.34691626821493626,
+            0.3112712812109281
+        ],
+        [
+            0.6204355931238615,
+            0.40297288842843576
+        ],
+        [
+            0.5291403403916212,
+            0.6188471387969736
+        ],
+        [
+            0.5292764448221757,
+            0.7559085617785938
+        ],
+        [
+            0.7300240494080146,
+            0.6662285346396938
+        ]
+    ],
+    "instructions": [
+        {
+            "from": -1,
+            "from_index": 0,
+            "to": 0,
+            "to_index": 0
+        },
+        {
+            "from": 1,
+            "from_index": 0,
+            "to": -1,
+            "to_index": 0
+        },
+        {
+            "from": 4,
+            "from_index": 0,
+            "to": -1,
+            "to_index": 1
+        },
+        {
+            "from": 2,
+            "from_index": 0,
+            "to": 4,
+            "to_index": 0
+        },
+        {
+            "from": 3,
+            "from_index": 0,
+            "to": 4,
+            "to_index": 1
+        },
+        {
+            "from": -1,
+            "from_index": 1,
+            "to": 0,
+            "to_index": 1
+        },
+        {
+            "from": 0,
+            "from_index": 0,
+            "to": 1,
+            "to_index": 0
+        },
+        {
+            "from": -1,
+            "from_index": 0,
+            "to": 3,
+            "to_index": 0
+        },
+        {
+            "from": -1,
+            "from_index": 1,
+            "to": 3,
+            "to_index": 1
+        },
+        {
+            "from": -1,
+            "from_index": 2,
+            "to": 1,
+            "to_index": 1
+        },
+        {
+            "from": 0,
+            "from_index": 0,
+            "to": 2,
+            "to_index": 0
+        },
+        {
+            "from": -1,
+            "from_index": 2,
+            "to": 2,
+            "to_index": 1
+        }
+    ],
+    "input_label": {},
+    "output_label": {},
+    "name": "custom"
+}
