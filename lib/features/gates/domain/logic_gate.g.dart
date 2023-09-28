@@ -8,8 +8,8 @@ part of 'logic_gate.dart';
 
 ANDGate _$ANDGateFromJson(Map<String, dynamic> json) => ANDGate()
   ..type = $enumDecode(_$LogicGateTypeEnumMap, json['type'])
-  ..input = const LogicDataConverter().fromJson(json['input'] as List<bool>)
-  ..output = const LogicDataConverter().fromJson(json['output'] as List<bool>);
+  ..input = const LogicDataConverter().fromJson(json['input'] as List)
+  ..output = const LogicDataConverter().fromJson(json['output'] as List);
 
 Map<String, dynamic> _$ANDGateToJson(ANDGate instance) => <String, dynamic>{
       'type': _$LogicGateTypeEnumMap[instance.type]!,
@@ -29,8 +29,8 @@ const _$LogicGateTypeEnumMap = {
 
 ORGate _$ORGateFromJson(Map<String, dynamic> json) => ORGate()
   ..type = $enumDecode(_$LogicGateTypeEnumMap, json['type'])
-  ..input = const LogicDataConverter().fromJson(json['input'] as List<bool>)
-  ..output = const LogicDataConverter().fromJson(json['output'] as List<bool>);
+  ..input = const LogicDataConverter().fromJson(json['input'] as List)
+  ..output = const LogicDataConverter().fromJson(json['output'] as List);
 
 Map<String, dynamic> _$ORGateToJson(ORGate instance) => <String, dynamic>{
       'type': _$LogicGateTypeEnumMap[instance.type]!,
@@ -40,8 +40,8 @@ Map<String, dynamic> _$ORGateToJson(ORGate instance) => <String, dynamic>{
 
 NORGate _$NORGateFromJson(Map<String, dynamic> json) => NORGate()
   ..type = $enumDecode(_$LogicGateTypeEnumMap, json['type'])
-  ..input = const LogicDataConverter().fromJson(json['input'] as List<bool>)
-  ..output = const LogicDataConverter().fromJson(json['output'] as List<bool>);
+  ..input = const LogicDataConverter().fromJson(json['input'] as List)
+  ..output = const LogicDataConverter().fromJson(json['output'] as List);
 
 Map<String, dynamic> _$NORGateToJson(NORGate instance) => <String, dynamic>{
       'type': _$LogicGateTypeEnumMap[instance.type]!,
@@ -51,8 +51,8 @@ Map<String, dynamic> _$NORGateToJson(NORGate instance) => <String, dynamic>{
 
 NOTGate _$NOTGateFromJson(Map<String, dynamic> json) => NOTGate()
   ..type = $enumDecode(_$LogicGateTypeEnumMap, json['type'])
-  ..input = const LogicDataConverter().fromJson(json['input'] as List<bool>)
-  ..output = const LogicDataConverter().fromJson(json['output'] as List<bool>);
+  ..input = const LogicDataConverter().fromJson(json['input'] as List)
+  ..output = const LogicDataConverter().fromJson(json['output'] as List);
 
 Map<String, dynamic> _$NOTGateToJson(NOTGate instance) => <String, dynamic>{
       'type': _$LogicGateTypeEnumMap[instance.type]!,
@@ -62,8 +62,8 @@ Map<String, dynamic> _$NOTGateToJson(NOTGate instance) => <String, dynamic>{
 
 XORGate _$XORGateFromJson(Map<String, dynamic> json) => XORGate()
   ..type = $enumDecode(_$LogicGateTypeEnumMap, json['type'])
-  ..input = const LogicDataConverter().fromJson(json['input'] as List<bool>)
-  ..output = const LogicDataConverter().fromJson(json['output'] as List<bool>);
+  ..input = const LogicDataConverter().fromJson(json['input'] as List)
+  ..output = const LogicDataConverter().fromJson(json['output'] as List);
 
 Map<String, dynamic> _$XORGateToJson(XORGate instance) => <String, dynamic>{
       'type': _$LogicGateTypeEnumMap[instance.type]!,
@@ -73,8 +73,8 @@ Map<String, dynamic> _$XORGateToJson(XORGate instance) => <String, dynamic>{
 
 NANDGate _$NANDGateFromJson(Map<String, dynamic> json) => NANDGate()
   ..type = $enumDecode(_$LogicGateTypeEnumMap, json['type'])
-  ..input = const LogicDataConverter().fromJson(json['input'] as List<bool>)
-  ..output = const LogicDataConverter().fromJson(json['output'] as List<bool>);
+  ..input = const LogicDataConverter().fromJson(json['input'] as List)
+  ..output = const LogicDataConverter().fromJson(json['output'] as List);
 
 Map<String, dynamic> _$NANDGateToJson(NANDGate instance) => <String, dynamic>{
       'type': _$LogicGateTypeEnumMap[instance.type]!,

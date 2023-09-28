@@ -12,7 +12,7 @@ CustomGate _$CustomGateFromJson(Map<String, dynamic> json) => CustomGate(
               const LogicGateConverter().fromJson(e as Map<String, dynamic>))
           .toList(),
       gatesPosition: (json['gates_position'] as List<dynamic>)
-          .map((e) => const OffsetConverter().fromJson(e as List<double>))
+          .map((e) => const OffsetConverter().fromJson(e as List))
           .toList(),
       instructions: (json['instructions'] as List<dynamic>?)
               ?.map(
@@ -27,8 +27,8 @@ CustomGate _$CustomGateFromJson(Map<String, dynamic> json) => CustomGate(
       ),
       type: $enumDecodeNullable(_$LogicGateTypeEnumMap, json['type']) ??
           LogicGateType.custom,
-      input: const LogicDataConverter().fromJson(json['input'] as List<bool>),
-      output: const LogicDataConverter().fromJson(json['output'] as List<bool>),
+      input: const LogicDataConverter().fromJson(json['input'] as List),
+      output: const LogicDataConverter().fromJson(json['output'] as List),
     )..name = json['name'] as String;
 
 Map<String, dynamic> _$CustomGateToJson(CustomGate instance) =>

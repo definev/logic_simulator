@@ -3,12 +3,13 @@ import 'package:json_annotation/json_annotation.dart';
 
 typedef Bit = bool;
 
-class LogicDataConverter extends JsonConverter<LogicData, List<Bit>> {
+class LogicDataConverter extends JsonConverter<LogicData, List<dynamic>> {
   const LogicDataConverter();
 
   @override
-  LogicData fromJson(List<Bit> json) {
-    return LogicData.fromBits(json);
+  LogicData fromJson(List<dynamic> json) {
+    final bits = json.cast<bool>();
+    return LogicData.fromBits(bits);
   }
 
   @override

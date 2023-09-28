@@ -47,10 +47,11 @@ class EditorView extends HookConsumerWidget {
     final theme = Theme.of(context);
 
     final current = ref.watch(editorGateProvider);
+    final editorGateNotifier = ref.read(editorGateProvider.notifier);
+
     useEffect(
       switch (gate) {
         final gate? => () {
-            final editorGateNotifier = ref.read(editorGateProvider.notifier);
             Timer.run(() => editorGateNotifier.setGate(gate));
             return;
           },
@@ -69,15 +70,60 @@ class EditorView extends HookConsumerWidget {
           children: [
             GateEditor(current),
             GatesSelector(),
-            ElevatedButton(
-              onPressed: () {
-                JsonUtils.print(current.toJson());
-              },
-              child: Text('Print json'),
+            GatesModifyBar(
+              current: current,
+              onGateChanged: (value) => editorGateNotifier.setGate(value),
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class GatesModifyBar extends HookWidget {
+  const GatesModifyBar({
+    super.key,
+    required this.current,
+    required this.onGateChanged,
+  });
+
+  final CustomGate current;
+  final ValueChanged<CustomGate> onGateChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final textController = useTextEditingController();
+
+    return Row(
+      children: [
+        Expanded(
+          child: Row(
+            children: [
+              ElevatedButton(
+                onPressed: () => JsonUtils.print(current.toJson()),
+                child: Text('Print json'),
+              ),
+              ElevatedButton(
+                onPressed: () => current.dumpLog(),
+                child: Text('Log state'),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: TextField(
+            controller: textController,
+            onSubmitted: (submit) {
+              textController.clear();
+              final json = JsonUtils.decode(submit);
+              if (json != null) {
+                onGateChanged(CustomGate.fromJson(json));
+              }
+            },
+          ),
+        ),
+      ],
     );
   }
 }

@@ -1,12 +1,15 @@
 // ignore_for_file: invalid_use_of_visible_for_testing_member
 
+import 'dart:developer';
 import 'dart:ui';
 
 import 'package:json_annotation/json_annotation.dart';
 import 'package:logic_simulator/features/editor/application/bit_dot_context_map.dart';
 import 'package:logic_simulator/features/editor/views/widgets/bit_dot.dart';
+import 'package:logic_simulator/features/gates/domain/json/logic_gate_converter.dart';
 import 'package:logic_simulator/features/gates/domain/logic_data.dart';
-import 'package:osum_serializable/osum_serializable.dart';
+import 'package:logic_simulator/features/gates/domain/logic_gate_type.dart';
+import 'package:logic_simulator/utils/json/offset_converter.dart';
 
 import 'instruction.dart';
 import 'logic_gate.dart';
@@ -84,6 +87,13 @@ class CustomGate extends LogicGate {
   }
 
   List<AddressInstruction> get instructions => _instructions;
+  List<AddressInstruction> get customGateInputInstructions =>
+      _instructions.where((inst) => inst.from == AddressInstruction.parent).toList();
+  List<AddressInstruction> get customGateOutputInstructions =>
+      _instructions.where((inst) => inst.to == AddressInstruction.parent).toList();
+  List<AddressInstruction> get childGatesInstructions => _instructions
+      .where((inst) => inst.from != AddressInstruction.parent && inst.to != AddressInstruction.parent)
+      .toList();
 
   void addAddressInstruction(AddressInstruction instruction) {
     _instructions.removeWhere((inst) => inst.to == instruction.to && inst.toIndex == instruction.toIndex);
@@ -125,22 +135,42 @@ class CustomGate extends LogicGate {
   LogicData compute([LogicData? input]) {
     input ??= this.input;
     output = output.reset();
-    _executeInstructions(input);
-    for (final gate in gates) {
-      gate.output = gate.compute();
+    final head = customGateInputInstructions;
+    final middle = childGatesInstructions;
+    final tail = customGateOutputInstructions;
+
+    void compute() {
+      for (final gate in gates) {
+        gate.output = gate.compute();
+      }
     }
-    _executeInstructions(input);
-    // Re-compute the output to make sure the output is correct
-    for (final gate in gates) {
-      gate.output = gate.compute();
-    }
-    // Arrange the output
-    _executeInstructions(input);
+
+    _executeInstructions(head, input);
+    compute();
+    _executeInstructions(middle, input);
+    compute();
+    _executeInstructions(_instructions, input);
+    compute();
+    _executeInstructions(tail, input);
+
     return output;
   }
 
-  void _executeInstructions(LogicData input) {
-    for (final instruction in _instructions) {
+  @override
+  void dumpLog() {
+    log('name: $name');
+    log('input: $input');
+    log('----' * 20);
+    for (final gate in gates) {
+      log('gate: ${gate.name}');
+      gate.dumpLog();
+    }
+    log('----' * 20);
+    log('output: $output');
+  }
+
+  void _executeInstructions(List<AddressInstruction> instructions, LogicData input) {
+    for (final instruction in instructions) {
       final AddressInstruction(:to, :toIndex) = instruction;
       Bit value = getValueFrom(instruction);
 

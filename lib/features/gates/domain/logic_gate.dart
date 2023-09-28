@@ -1,76 +1,14 @@
 // ignore_for_file: unused_element
 
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'package:logic_simulator/features/gates/domain/custom_gate.dart';
+import 'package:logic_simulator/features/gates/domain/logic_gate_type.dart';
 
 import 'logic_data.dart';
 
 part 'logic_gate.g.dart';
-
-class LogicException implements Exception {
-  const LogicException._(this.message);
-
-  factory LogicException.invalidLength(
-    int length,
-    int expected, {
-    required String gate,
-  }) =>
-      LogicException._('$gate. invalid length: $length, expected: $expected');
-
-  final String message;
-
-  @override
-  String toString() => message;
-}
-
-enum LogicGateType {
-  and,
-  or,
-  nor,
-  not,
-  xor,
-  nand,
-  custom,
-}
-
-class LogicGateConverter extends JsonConverter<LogicGate, Map<String, dynamic>> {
-  const LogicGateConverter();
-
-  @override
-  LogicGate fromJson(Map<String, dynamic> json) {
-    final type = LogicGateType.values.asNameMap()[json['type']]!;
-    switch (type) {
-      case LogicGateType.and:
-        return ANDGate.fromJson(json);
-      case LogicGateType.or:
-        return ORGate.fromJson(json);
-      case LogicGateType.nor:
-        return NORGate.fromJson(json);
-      case LogicGateType.not:
-        return NOTGate.fromJson(json);
-      case LogicGateType.xor:
-        return XORGate.fromJson(json);
-      case LogicGateType.nand:
-        return NANDGate.fromJson(json);
-      case LogicGateType.custom:
-        return CustomGate.fromJson(json);
-    }
-  }
-
-  @override
-  Map<String, dynamic> toJson(LogicGate object) {
-    return switch (object.type) {
-      LogicGateType.and => (object as ANDGate).toJson(),
-      LogicGateType.or => (object as ORGate).toJson(),
-      LogicGateType.nor => (object as NORGate).toJson(),
-      LogicGateType.not => (object as NOTGate).toJson(),
-      LogicGateType.xor => (object as XORGate).toJson(),
-      LogicGateType.nand => (object as NANDGate).toJson(),
-      LogicGateType.custom => (object as CustomGate).toJson(),
-    };
-  }
-}
 
 abstract class LogicGate extends ChangeNotifier {
   LogicGate({
@@ -92,6 +30,7 @@ abstract class LogicGate extends ChangeNotifier {
 
   // ignore: prefer_final_fields
   LogicGateType _type;
+  // ignore: unnecessary_getters_setters
   LogicGateType get type => _type;
   set type(LogicGateType data) {
     _type = data;
@@ -127,6 +66,12 @@ abstract class LogicGate extends ChangeNotifier {
   LogicData compute([LogicData? input]);
 
   LogicGate clone();
+
+  void dumpLog() {
+    log('name: $name');
+    log('input: $input');
+    log('output: $output');
+  }
 }
 
 @JsonSerializable()
