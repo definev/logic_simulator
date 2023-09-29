@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:logic_simulator/features/canvas/domain/grid_canvas.dart';
+import 'package:logic_simulator/features/canvas/domain/grid_position.dart';
+import 'package:logic_simulator/features/canvas/views/grid_cell.dart';
 import 'package:supercharged/supercharged.dart';
 import 'package:vector_math/vector_math_64.dart' hide Colors;
 
@@ -18,9 +20,7 @@ class _CanvasViewState extends State<CanvasView> {
   Quad? _viewport;
   set viewport(Quad? value) {
     if (value == null) return;
-    if (_viewport == value) return;
     _viewport = value;
-    Timer.run(() => setState(() {}));
   }
 
   double viewportThreshold = 20;
@@ -131,6 +131,40 @@ class _CanvasViewState extends State<CanvasView> {
     setState(() {});
   }
 
+  bool _isVisible(int row, int col) {
+    if (_viewport == null) return false;
+    final topLeft = Vector2(
+      _viewport!.point0.x.floorToDouble(),
+      _viewport!.point0.y.floorToDouble(),
+    );
+    final bottomRight = Vector2(
+      _viewport!.point2.x.roundToDouble(),
+      _viewport!.point2.y.roundToDouble(),
+    );
+    final topLeftCoor = _getAt(row + 1, col + 1);
+    final bottomRightCoor = _getAt(row, col);
+    if (topLeftCoor.x < topLeft.x || bottomRightCoor.x > bottomRight.x) return false;
+    if (topLeftCoor.y < topLeft.y || bottomRightCoor.y > bottomRight.y) return false;
+    return true;
+  }
+
+  ({int top, int bottom, int left, int right}) _getCornerBounds() {
+    final viewport = _viewport!;
+    int left = viewport.point0.x.floorToDouble() ~/ canvas.cellSize;
+    int right = viewport.point2.x.roundToDouble() ~/ canvas.cellSize;
+    int top = viewport.point0.y.floorToDouble() ~/ canvas.cellSize;
+    int bottom = viewport.point2.y.roundToDouble() ~/ canvas.cellSize;
+    return (top: top, bottom: bottom, left: left, right: right);
+  }
+
+  ({double x, double y}) _getAt(int row, int col) {
+    return (x: row * canvas.cellSize, y: col * canvas.cellSize);
+  }
+
+  GridPosition _getCoorAt(int row, int col) {
+    return GridPosition(row + canvas.viewport.origin.x - canvas.width, col + canvas.viewport.origin.y - canvas.height);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -152,6 +186,7 @@ class _CanvasViewState extends State<CanvasView> {
                     minScale: 0.7,
                     onInteractionStart: (_) => onInteractionUpdated(),
                     onInteractionEnd: (_) => onInteractionUpdated(),
+                    clipBehavior: Clip.none,
                     builder: (context, quad) {
                       viewport = quad;
                       return Container(
@@ -160,32 +195,18 @@ class _CanvasViewState extends State<CanvasView> {
                         color: Colors.white,
                         child: Stack(
                           children: [
-                            for (int i = 0; i < 3; i++)
-                              for (int j = 0; j < 3; j++)
-                                () {
-                                  final coor =
-                                      (x: i + canvas.viewport.origin.x - 1, y: j + canvas.viewport.origin.y - 1);
-                                  final color = Colors.blue.withOpacity(
-                                    (1 -
-                                            (Vector2.all(0.0)
-                                                    .distanceTo(Vector2(coor.x.toDouble(), coor.y.toDouble())) /
-                                                10))
-                                        .clamp(0, 1),
-                                  );
-                                  return Positioned(
-                                    left: i * size.width,
-                                    top: j * size.height,
-                                    child: Container(
-                                      height: size.height,
-                                      width: size.width,
-                                      color: color,
-                                      child: Align(
-                                        alignment: Alignment.bottomLeft,
-                                        child: Text('(${coor.x}, ${coor.y})'),
-                                      ),
+                            if (_getCornerBounds() case final bounds) ...[
+                              for (int row = bounds.left; row <= bounds.right; row++)
+                                for (int col = bounds.top; col <= bounds.bottom; col++)
+                                  Positioned(
+                                    left: row * canvas.cellSize,
+                                    top: col * canvas.cellSize,
+                                    child: GridCell(
+                                      size: canvas.cellSize,
+                                      position: _getCoorAt(row, col),
                                     ),
-                                  );
-                                }(),
+                                  ),
+                            ],
                           ],
                         ),
                       );
@@ -194,26 +215,31 @@ class _CanvasViewState extends State<CanvasView> {
                 },
               ),
             ),
-            if (_viewport case final viewport?)
-              Align(
-                alignment: Alignment.bottomRight,
-                child: ColoredBox(
-                  color: Colors.blue,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'Topleft: (${viewport.point0.x.floorToDouble()}, ${viewport.point0.y.floorToDouble()})',
-                        style: TextStyle(color: Colors.white),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: NavigationBar(
+                destinations: const [
+                  NavigationDestination(
+                    icon: Draggable(
+                      feedback: SizedBox.square(
+                        dimension: 30,
+                        child: ColoredBox(color: Colors.red),
                       ),
-                      Text(
-                        'Bottomright: (${viewport.point2.x.roundToDouble()}, ${viewport.point2.y.roundToDouble()})',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ],
+                      child: Icon(Icons.abc),
+                    ),
+                    label: 'ABC',
                   ),
-                ),
+                  NavigationDestination(
+                    icon: Icon(Icons.home),
+                    label: 'Home',
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.more),
+                    label: 'More',
+                  ),
+                ],
               ),
+            ),
           ],
         ),
       ),

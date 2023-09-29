@@ -3,4 +3,9 @@ class GridPosition {
 
   final int x;
   final int y;
+
+  @override
+  String toString() {
+    return '(x: $x, y: $y)';
+  }
 }

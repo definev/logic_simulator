@@ -10,7 +10,7 @@ class GridCanvas extends ChangeNotifier {
 
   final double cellSize;
 
-  static double get cellSizeDefault => 20;
+  static double get cellSizeDefault => 200;
 
   GridViewport _viewport;
   GridViewport get viewport => _viewport;
