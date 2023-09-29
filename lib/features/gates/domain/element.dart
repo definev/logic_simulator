@@ -40,7 +40,7 @@ class Structural with Component {
         assert(components.first.output.length == outputCount),
         assert(components.last.output.length == inputCount);
 
-  final List<CompTo> components;
+  final List<CompIO> components;
   @override
   final int inputCount;
   @override
@@ -82,7 +82,7 @@ extension StructuralX on Structural {
 
   void updateComponents() {
     for (final compTo in components.skip(1)) {
-      final CompTo(:input, :component) = compTo;
+      final CompIO(:input, :component) = compTo;
       compTo.output = component.update(input);
     }
   }
@@ -90,19 +90,27 @@ extension StructuralX on Structural {
   List<Bit> get output => List.of(components.first.input);
 }
 
-class CompTo {
-  CompTo._({
+class CompIO {
+  CompIO._({
     required this.component,
     required this.input,
     required this.output,
     required this.connections,
   });
 
-  factory CompTo(Component component) {
+  factory CompIO(Component component) {
     final input = List.generate(component.inputCount, (index) => Bit.unknown);
     final output = List.generate(component.outputCount, (index) => Bit.unknown);
     final connections = List.generate(component.outputCount, (index) => <Index>[]);
-    return CompTo._(component: component, input: input, output: output, connections: connections);
+    return CompIO._(component: component, input: input, output: output, connections: connections);
+  }
+
+  factory CompIO.zero(int inputCount, int outputCount) {
+    final component = Nand(inputCount: 0);
+    final input = List.generate(inputCount, (index) => Bit.unknown);
+    final output = List.generate(outputCount, (index) => Bit.unknown);
+    final connections = List.generate(inputCount, (index) => <Index>[]);
+    return CompIO._(component: component, input: input, output: output, connections: connections);
   }
 
   final Component component;
@@ -115,8 +123,8 @@ extension ConnectionsX on List<List<Index>> {
   List<List<Index>> clone() => List.generate(length, (index) => [...this[index]]);
 }
 
-extension CompToConnectionX on CompTo {
-  void addConnection(int outputId, int componentId, int inputId) {
+extension CompToConnectionX on CompIO {
+  void addConnection(int outputId, {required int componentId, required int inputId}) {
     connections[outputId].add((componentId: componentId, inputId: inputId));
   }
 }
@@ -206,6 +214,28 @@ class And with Component {
   }
 }
 
+Structural orGate() {
+  final c = <CompIO>[];
+  final cZero = CompIO.zero(2, 1);
+  final nandA = CompIO(Nand(inputCount: 1));
+  final nandB = CompIO(Nand(inputCount: 1));
+  final nandC = CompIO(Nand(inputCount: 2));
+
+  cZero.addConnection(0, componentId: 1, inputId: 0);
+  cZero.addConnection(1, componentId: 2, inputId: 0);
+
+  nandA.addConnection(0, componentId: 3, inputId: 0);
+  nandB.addConnection(0, componentId: 3, inputId: 1);
+  nandC.addConnection(0, componentId: 0, inputId: 0);
+
+  c.add(cZero);
+  c.add(nandA);
+  c.add(nandB);
+  c.add(nandC);
+
+  return Structural(components: c, inputCount: 2, outputCount: 1, name: 'OR2');
+}
+
 void main() {
   final nandA = Nand(inputCount: 1);
   final nandB = Nand(inputCount: 1);
@@ -213,8 +243,10 @@ void main() {
   final nandD = Nand(inputCount: 5);
   final or = Or(nandA: nandA, nandB: nandB, nandC: nandC);
   final and = And(inputCount: 5, nand: nandC);
-  print(or.truthTable);
-  print(nandC.truthTable);
-  print(and.truthTable);
-  print(nandD.truthTable);
+  final newOr = orGate();
+  // print(or.truthTable);
+  // print(nandC.truthTable);
+  // print(and.truthTable);
+  // print(nandD.truthTable);
+  print(newOr.truthTable);
 }
