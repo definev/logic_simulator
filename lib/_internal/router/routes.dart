@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:logic_simulator/features/canvas/views/canvas_view.dart';
 import 'package:logic_simulator/features/editor/views/editor_view.dart';
 import 'package:logic_simulator/features/gates/domain/custom_gate.dart';
 
@@ -26,5 +27,13 @@ class HomeRouteData extends GoRouteData {
         child: Text('Home'),
       ),
     );
+  }
+}
+
+@TypedGoRoute<CanvasRouteData>(path: '/canvas')
+class CanvasRouteData extends GoRouteData {
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    return CanvasView();
   }
 }

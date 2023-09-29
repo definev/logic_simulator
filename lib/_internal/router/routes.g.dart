@@ -9,6 +9,7 @@ part of 'routes.dart';
 List<RouteBase> get $appRoutes => [
       $editorRouteData,
       $homeRouteData,
+      $canvasRouteData,
     ];
 
 RouteBase get $editorRouteData => GoRouteData.$route(
@@ -47,6 +48,28 @@ extension $HomeRouteDataExtension on HomeRouteData {
 
   String get location => GoRouteData.$location(
         '/',
+      );
+
+  void go(BuildContext context) => context.go(location);
+
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  void replace(BuildContext context) => context.replace(location);
+}
+
+RouteBase get $canvasRouteData => GoRouteData.$route(
+      path: '/canvas',
+      factory: $CanvasRouteDataExtension._fromState,
+    );
+
+extension $CanvasRouteDataExtension on CanvasRouteData {
+  static CanvasRouteData _fromState(GoRouterState state) => CanvasRouteData();
+
+  String get location => GoRouteData.$location(
+        '/canvas',
       );
 
   void go(BuildContext context) => context.go(location);

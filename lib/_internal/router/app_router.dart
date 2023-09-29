@@ -8,6 +8,6 @@ part 'app_router.g.dart';
 GoRouter appRouter(AppRouterRef ref) {
   return GoRouter(
     routes: $appRoutes,
-    initialLocation: EditorRouteData().location,
+    initialLocation: CanvasRouteData().location,
   );
 }
