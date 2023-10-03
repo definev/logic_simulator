@@ -72,6 +72,10 @@ dependencies:
   # Desktop-specific
   desktop_split_pane: ^1.0.3
 
+  # VCD parsing
+  dart_vcd: ^1.0.2
+
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

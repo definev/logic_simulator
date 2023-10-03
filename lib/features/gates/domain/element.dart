@@ -1,3 +1,5 @@
+import 'package:dart_vcd/dart_vcd.dart';
+
 enum Bit {
   zero,
   one,
@@ -30,15 +32,20 @@ mixin Component {
   }
 }
 
-class Structural with Component {
+mixin VCDWritable on Component {
+  VCDHandler writeInternalComponent(VCDWriter writer, int scope) => VCDHandler(id: {});
+
+  void writeInternalSignal(VCDWriter writer, int scope, VCDHandler handler) {}
+}
+
+class Structural with Component, VCDWritable {
   Structural({
     required this.components,
     required this.inputCount,
     required this.outputCount,
     required this.name,
   })  : assert(components.first.input.length == inputCount),
-        assert(components.first.output.length == outputCount),
-        assert(components.last.output.length == inputCount);
+        assert(components.first.output.length == outputCount);
 
   final List<CompIO> components;
   @override
@@ -50,21 +57,41 @@ class Structural with Component {
 
   @override
   List<Bit> update(List<Bit> input) {
+    // Propagate input
     propagateInput(input);
+    // Update components
     updateComponents();
+    // Propagate internal signals
     propagateSignals();
+    // Return the component output
     return output;
   }
+
+  @override
+  VCDHandler writeInternalComponent(VCDWriter writer, int scope) {
+    final vh = VCDHandler(id: {});
+    final isParentScope = scope == 0;
+    if (isParentScope) {
+      var index = InstanceIndex(instance: scope, port: 0);
+      final instanceName = '$name-$scope';
+      writer.addModule(instanceName);
+    }
+
+    return vh;
+  }
+
+  @override
+  void writeInternalSignal(VCDWriter writer, int scope, VCDHandler handler) {}
 }
 
 extension StructuralX on Structural {
-  void propagate(int componentId) {
-    final outComponent = components[componentId];
+  void propagate(int outComponentIndex) {
+    final outComponent = components[outComponentIndex];
     final connections = outComponent.connections.clone();
-    for (final (outIndex, toInfo) in connections.indexed) {
-      for (final i in toInfo) {
-        final inputComponent = components[i.componentId];
-        inputComponent.input[i.inputId] = outComponent.output[outIndex];
+    for (final (outIndex, input) in connections.indexed) {
+      for (final (:inputIndex, componentIndex: inputComponentIndex) in input) {
+        final inputComponent = components[inputComponentIndex];
+        inputComponent.input[inputIndex] = outComponent.output[outIndex];
       }
     }
   }
@@ -101,7 +128,7 @@ class CompIO {
   factory CompIO(Component component) {
     final input = List.generate(component.inputCount, (index) => Bit.unknown);
     final output = List.generate(component.outputCount, (index) => Bit.unknown);
-    final connections = List.generate(component.outputCount, (index) => <Index>[]);
+    final connections = List.generate(component.outputCount, (index) => <ComponentIndex>[]);
     return CompIO._(component: component, input: input, output: output, connections: connections);
   }
 
@@ -109,27 +136,27 @@ class CompIO {
     final component = Nand(inputCount: 0);
     final input = List.generate(inputCount, (index) => Bit.unknown);
     final output = List.generate(outputCount, (index) => Bit.unknown);
-    final connections = List.generate(inputCount, (index) => <Index>[]);
+    final connections = List.generate(inputCount, (index) => <ComponentIndex>[]);
     return CompIO._(component: component, input: input, output: output, connections: connections);
   }
 
   final Component component;
   List<Bit> input;
   List<Bit> output;
-  List<List<Index>> connections;
+  List<List<ComponentIndex>> connections;
 }
 
-extension ConnectionsX on List<List<Index>> {
-  List<List<Index>> clone() => List.generate(length, (index) => [...this[index]]);
+extension ConnectionsX on List<List<ComponentIndex>> {
+  List<List<ComponentIndex>> clone() => List.generate(length, (index) => [...this[index]]);
 }
 
 extension CompToConnectionX on CompIO {
-  void addConnection(int outputId, {required int componentId, required int inputId}) {
-    connections[outputId].add((componentId: componentId, inputId: inputId));
+  void addConnection(int outputIndex, {required int componentIndex, required int inputIndex}) {
+    connections[outputIndex].add((componentIndex: componentIndex, inputIndex: inputIndex));
   }
 }
 
-typedef Index = ({int componentId, int inputId});
+typedef ComponentIndex = ({int componentIndex, int inputIndex});
 
 class Nand with Component {
   Nand({required this.inputCount});
@@ -221,12 +248,12 @@ Structural orGate() {
   final nandB = CompIO(Nand(inputCount: 1));
   final nandC = CompIO(Nand(inputCount: 2));
 
-  cZero.addConnection(0, componentId: 1, inputId: 0);
-  cZero.addConnection(1, componentId: 2, inputId: 0);
+  cZero.addConnection(0, componentIndex: 1, inputIndex: 0);
+  cZero.addConnection(1, componentIndex: 2, inputIndex: 0);
 
-  nandA.addConnection(0, componentId: 3, inputId: 0);
-  nandB.addConnection(0, componentId: 3, inputId: 1);
-  nandC.addConnection(0, componentId: 0, inputId: 0);
+  nandA.addConnection(0, componentIndex: 3, inputIndex: 0);
+  nandB.addConnection(0, componentIndex: 3, inputIndex: 1);
+  nandC.addConnection(0, componentIndex: 0, inputIndex: 0);
 
   c.add(cZero);
   c.add(nandA);
@@ -234,6 +261,73 @@ Structural orGate() {
   c.add(nandC);
 
   return Structural(components: c, inputCount: 2, outputCount: 1, name: 'OR2');
+}
+
+abstract class Simulator {
+  Simulator({required this.ticks});
+  final int ticks;
+
+  void run(Component component, List<List<Bit>> inputs);
+
+  List<List<Bit>> get outputs;
+}
+
+class VCDSimulator extends Simulator {
+  VCDSimulator({required super.ticks});
+
+  StringBufferVCDWriter writer = StringBufferVCDWriter();
+
+  List<List<Bit>> _outputs = [];
+  @override
+  List<List<Bit>> get outputs => _outputs;
+
+  @override
+  void run(Component component, List<List<Bit>> inputs) {
+    if (component is! VCDWritable) return;
+    writer.flush();
+    _outputs = [];
+    writer.timescale(1, TimescaleUnit.ns);
+    final vh = component.writeInternalComponent(writer, 0);
+    writer.enddefinitions();
+
+    writer.begin(SimulationCommand.dumpvars);
+    for (final id in vh.id.values) {
+      writer.changeScalar(id, Value.x);
+    }
+    writer.end();
+
+    for (int t = 0; t < ticks; t++) {
+      writer.timestamp(t);
+      component.update(inputs[t]);
+      component.writeInternalSignal(writer, 0, vh);
+    }
+    writer.timestamp(ticks);
+  }
+}
+
+class InstanceIndex {
+  const InstanceIndex({required this.instance, required this.port});
+
+  final int instance;
+  final int port;
+
+  @override
+  String toString() => 'InstanceIndex(instance: $instance, port: $port)';
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is InstanceIndex && other.instance == instance && other.port == port;
+  }
+
+  @override
+  int get hashCode => Object.hash(instance, port);
+}
+
+class VCDHandler {
+  final Map<InstanceIndex, IDCode> id;
+
+  VCDHandler({required this.id});
 }
 
 void main() {
