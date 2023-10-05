@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dart_vcd/dart_vcd.dart';
 
 enum Bit {
@@ -9,6 +11,14 @@ enum Bit {
         Bit.zero => '0',
         Bit.one => '1',
         Bit.unknown => '?',
+      };
+}
+
+extension BitToValueConverter on Bit {
+  Value get bitValue => switch (this) {
+        Bit.zero => Value.v0,
+        Bit.one => Value.v1,
+        Bit.unknown => Value.x,
       };
 }
 
@@ -35,7 +45,7 @@ mixin Component {
 mixin VCDWritable on Component {
   VCDHandler writeInternalComponent(VCDWriter writer, int scope) => VCDHandler(id: {});
 
-  void writeInternalSignal(VCDWriter writer, int scope, VCDHandler handler) {}
+  void writeInternalSignals(VCDWriter writer, int scope, VCDHandler handler);
 }
 
 class Structural with Component, VCDWritable {
@@ -44,8 +54,8 @@ class Structural with Component, VCDWritable {
     required this.inputCount,
     required this.outputCount,
     required this.name,
-  })  : assert(components.first.input.length == inputCount),
-        assert(components.first.output.length == outputCount);
+  })  : assert(components.first.input.length == outputCount),
+        assert(components.first.output.length == inputCount);
 
   final List<CompIO> components;
   @override
@@ -57,6 +67,7 @@ class Structural with Component, VCDWritable {
 
   @override
   List<Bit> update(List<Bit> input) {
+    assert(input.length == inputCount);
     // Propagate input
     propagateInput(input);
     // Update components
@@ -75,13 +86,94 @@ class Structural with Component, VCDWritable {
       var index = InstanceIndex(instance: scope, port: 0);
       final instanceName = '$name-$scope';
       writer.addModule(instanceName);
+      for (int i = 0; i < inputCount; i++) {
+        vh.id[index] = writer.addWire(1, '$instanceName-i$i');
+        index = index.copyWith(port: index.port + 1);
+      }
+
+      for (int i = 0; i < outputCount; i++) {
+        vh.id[index] = writer.addWire(1, '$instanceName-o$i');
+        index = index.copyWith(port: index.port + 1);
+      }
+
+      scope += 1;
+    }
+
+    for (final comp in components.skip(1).where((c) => VCDSimulator.VCD_SHOW_NAND || c.component.name != 'NAND')) {
+      var index = InstanceIndex(instance: scope, port: 0);
+      final CompIO(:component) = comp;
+      if (component is! VCDWritable) continue;
+      final instanceName = '${comp.component.name}-$scope';
+      writer.addModule(instanceName);
+      for (int i = 0; i < component.inputCount; i++) {
+        vh.id[index] = writer.addWire(1, '$instanceName-i$i');
+        index = index.copyWith(port: index.port + 1);
+      }
+
+      for (int i = 0; i < component.outputCount; i++) {
+        vh.id[index] = writer.addWire(1, '$instanceName-o$i');
+        index = index.copyWith(port: index.port + 1);
+      }
+
+      scope += 1;
+      final ch = component.writeInternalComponent(writer, scope);
+      vh.id.addAll(ch.id);
+      writer.upscope();
+    }
+
+    if (isParentScope) {
+      writer.upscope();
     }
 
     return vh;
   }
 
+  InstanceIndex writeVcdSignals(
+    VCDWriter writer,
+    InstanceIndex index, {
+    required VCDHandler handler,
+    required List<Bit> signal1,
+    required List<Bit> signal2,
+  }) {
+    for (final bit in signal1) {
+      final id = handler.id[index]!;
+      writer.changeScalar(id, bit.bitValue);
+      index = index.copyWith(port: index.port + 1);
+    }
+
+    for (final bit in signal2) {
+      final id = handler.id[index]!;
+      writer.changeScalar(id, bit.bitValue);
+      index = index.copyWith(port: index.port + 1);
+    }
+
+    return index;
+  }
+
   @override
-  void writeInternalSignal(VCDWriter writer, int scope, VCDHandler handler) {}
+  void writeInternalSignals(VCDWriter writer, int scope, VCDHandler handler) {
+    final isParentScope = scope == 0;
+
+    if (isParentScope) {
+      final input = List.of(components.first.output);
+      final output = List.of(components.first.input);
+      final index = InstanceIndex(instance: scope, port: 0);
+      writeVcdSignals(writer, index, handler: handler, signal1: input, signal2: output);
+      scope += 1;
+    }
+
+    for (final comp in components.skip(1).where((c) => VCDSimulator.VCD_SHOW_NAND || c.component.name == 'NAND')) {
+      final CompIO(:component) = comp;
+      if (component is! VCDWritable) continue;
+      final input = List<Bit>.from(comp.input);
+      final output = List<Bit>.from(comp.output);
+      final index = InstanceIndex(instance: scope, port: 0);
+      writeVcdSignals(writer, index, handler: handler, signal1: input, signal2: output);
+      scope += 1;
+
+      component.writeInternalSignals(writer, scope, handler);
+    }
+  }
 }
 
 extension StructuralX on Structural {
@@ -134,8 +226,8 @@ class CompIO {
 
   factory CompIO.zero(int inputCount, int outputCount) {
     final component = Nand(inputCount: 0);
-    final input = List.generate(inputCount, (index) => Bit.unknown);
-    final output = List.generate(outputCount, (index) => Bit.unknown);
+    final input = List.generate(outputCount, (index) => Bit.unknown);
+    final output = List.generate(inputCount, (index) => Bit.unknown);
     final connections = List.generate(inputCount, (index) => <ComponentIndex>[]);
     return CompIO._(component: component, input: input, output: output, connections: connections);
   }
@@ -267,7 +359,7 @@ abstract class Simulator {
   Simulator({required this.ticks});
   final int ticks;
 
-  void run(Component component, List<List<Bit>> inputs);
+  void run(covariant Component component);
 
   List<List<Bit>> get outputs;
 }
@@ -275,31 +367,48 @@ abstract class Simulator {
 class VCDSimulator extends Simulator {
   VCDSimulator({required super.ticks});
 
+  static const VCD_SHOW_NAND = true;
+
   StringBufferVCDWriter writer = StringBufferVCDWriter();
 
+  RepeatInputIterable _makeInputs(int size) => RepeatInputIterable(size: size, repeatTime: ticks);
   List<List<Bit>> _outputs = [];
   @override
   List<List<Bit>> get outputs => _outputs;
 
   @override
-  void run(Component component, List<List<Bit>> inputs) {
-    if (component is! VCDWritable) return;
-    writer.flush();
+  void run(VCDWritable component) {
     _outputs = [];
+    writer.flush();
+
+    final inputs = _makeInputs(component.inputCount);
+
     writer.timescale(1, TimescaleUnit.ns);
-    final vh = component.writeInternalComponent(writer, 0);
+    final handler = component.writeInternalComponent(writer, 0);
+    writer.addModule('clk');
+    final clk = writer.addWire(1, 'clk');
+    writer.upscope();
+
     writer.enddefinitions();
 
+    // Write the initial values
     writer.begin(SimulationCommand.dumpvars);
-    for (final id in vh.id.values) {
-      writer.changeScalar(id, Value.x);
+    writer.changeScalar(clk, Bit.one.bitValue);
+    for (final id in handler.id.values) {
+      writer.changeScalar(id, Bit.unknown.bitValue);
     }
     writer.end();
 
-    for (int t = 0; t < ticks; t++) {
+    final inputCount = component.inputCount;
+    var clkOn = true;
+    for (final (t, currentInput) in inputs.take(ticks).indexed) {
       writer.timestamp(t);
-      component.update(inputs[t]);
-      component.writeInternalSignal(writer, 0, vh);
+      final inputStartAt = currentInput.length - inputCount;
+      component.update(currentInput.sublist(inputStartAt, currentInput.length));
+
+      component.writeInternalSignals(writer, 0, handler);
+      writer.changeScalar(clk, clkOn ? Bit.one.bitValue : Bit.zero.bitValue);
+      clkOn = !clkOn;
     }
     writer.timestamp(ticks);
   }
@@ -322,6 +431,16 @@ class InstanceIndex {
 
   @override
   int get hashCode => Object.hash(instance, port);
+
+  InstanceIndex copyWith({
+    int? instance,
+    int? port,
+  }) {
+    return InstanceIndex(
+      instance: instance ?? this.instance,
+      port: port ?? this.port,
+    );
+  }
 }
 
 class VCDHandler {
@@ -330,17 +449,71 @@ class VCDHandler {
   VCDHandler({required this.id});
 }
 
+class RepeatInputIterable extends Iterable<List<Bit>> {
+  const RepeatInputIterable({
+    required this.size,
+    required this.repeatTime,
+  });
+
+  final int size;
+  final int repeatTime;
+
+  @override
+  Iterator<List<Bit>> get iterator => RepeatInputIterator(size: size, repeatTime: repeatTime);
+}
+
+class RepeatInputIterator implements Iterator<List<Bit>> {
+  RepeatInputIterator({
+    required this.size,
+    required this.repeatTime,
+  }) {
+    _current = List.generate(size, (index) => Bit.zero);
+  }
+
+  final int size;
+  final int repeatTime;
+  int _currentTime = 0;
+
+  List<Bit> _current = [];
+
+  @override
+  List<Bit> get current => _current;
+
+  static List<Bit> _nextInput(List<Bit> input) {
+    final nextInput = List.of(input);
+    var i = nextInput.length;
+    var carry = true;
+    while (carry && i > 0) {
+      i -= 1;
+      switch (nextInput[i]) {
+        case Bit.zero:
+          carry = false;
+          nextInput[i] = Bit.one;
+        case Bit.one:
+          carry = true;
+          nextInput[i] = Bit.zero;
+        case Bit.unknown:
+          carry = true;
+      }
+    }
+    return nextInput;
+  }
+
+  @override
+  bool moveNext() {
+    if (_currentTime == repeatTime) {
+      _currentTime = 0;
+      _current = _nextInput([..._current]);
+    }
+    _currentTime++;
+    return true;
+  }
+}
+
 void main() {
-  final nandA = Nand(inputCount: 1);
-  final nandB = Nand(inputCount: 1);
-  final nandC = Nand(inputCount: 2);
-  final nandD = Nand(inputCount: 5);
-  final or = Or(nandA: nandA, nandB: nandB, nandC: nandC);
-  final and = And(inputCount: 5, nand: nandC);
   final newOr = orGate();
-  // print(or.truthTable);
-  // print(nandC.truthTable);
-  // print(and.truthTable);
-  // print(nandD.truthTable);
-  print(newOr.truthTable);
+  final simulator = VCDSimulator(ticks: 100);
+  simulator.run(newOr);
+  File file = File('or.vcd');
+  file.writeAsStringSync(simulator.writer.result);
 }
