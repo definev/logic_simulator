@@ -99,7 +99,7 @@ class Structural with Component, VCDWritable {
       scope += 1;
     }
 
-    for (final comp in components.skip(1).where((c) => VCDSimulator.VCD_SHOW_NAND || c.component.name != 'NAND')) {
+    for (final comp in components.skip(1).where((c) => FileVCDSimulator.VCD_SHOW_NAND || !Nand.isNand(c.component))) {
       var index = InstanceIndex(instance: scope, port: 0);
       final CompIO(:component) = comp;
       if (component is! VCDWritable) continue;
@@ -162,7 +162,7 @@ class Structural with Component, VCDWritable {
       scope += 1;
     }
 
-    for (final comp in components.skip(1).where((c) => VCDSimulator.VCD_SHOW_NAND || c.component.name == 'NAND')) {
+    for (final comp in components.skip(1).where((c) => FileVCDSimulator.VCD_SHOW_NAND || !Nand.isNand(c.component))) {
       final CompIO(:component) = comp;
       if (component is! VCDWritable) continue;
       final input = List<Bit>.from(comp.input);
@@ -250,10 +250,13 @@ extension CompToConnectionX on CompIO {
 
 typedef ComponentIndex = ({int componentIndex, int inputIndex});
 
-class Nand with Component {
+class Nand with Component, VCDWritable {
   Nand({required this.inputCount});
   @override
   final int inputCount;
+
+  @override
+  int get outputCount => 1;
 
   @override
   String get name => 'NAND';
@@ -274,6 +277,29 @@ class Nand with Component {
       }
     }
     return [x];
+  }
+
+  @override
+  VCDHandler writeInternalComponent(VCDWriter writer, int scope) {
+    final vh = VCDHandler(id: {});
+    final instanceName = '$name$inputCount-$scope';
+    var index = InstanceIndex(instance: scope, port: 0);
+    for (int i = 0; i < inputCount; i++) {
+      vh.id[index] = writer.addWire(1, '$instanceName-i$i');
+      index = index.copyWith(port: index.port + 1);
+    }
+    for (int i = 0; i < outputCount; i++) {
+      vh.id[index] = writer.addWire(1, '$instanceName-o$i');
+      index = index.copyWith(port: index.port + 1);
+    }
+    return vh;
+  }
+
+  @override
+  void writeInternalSignals(VCDWriter writer, int scope, VCDHandler handler) {}
+
+  static bool isNand(Component component) {
+    return component.name == 'NAND';
   }
 }
 
@@ -364,14 +390,20 @@ abstract class Simulator {
   List<List<Bit>> get outputs;
 }
 
-class VCDSimulator extends Simulator {
-  VCDSimulator({required super.ticks});
+class FileVCDSimulator extends Simulator {
+  FileVCDSimulator({
+    required super.ticks,
+    required this.file,
+    required this.iterable,
+  });
 
   static const VCD_SHOW_NAND = true;
 
+  final File file;
+  final RepeatInputIterable iterable;
+
   StringBufferVCDWriter writer = StringBufferVCDWriter();
 
-  RepeatInputIterable _makeInputs(int size) => RepeatInputIterable(size: size, repeatTime: ticks);
   List<List<Bit>> _outputs = [];
   @override
   List<List<Bit>> get outputs => _outputs;
@@ -380,8 +412,6 @@ class VCDSimulator extends Simulator {
   void run(VCDWritable component) {
     _outputs = [];
     writer.flush();
-
-    final inputs = _makeInputs(component.inputCount);
 
     writer.timescale(1, TimescaleUnit.ns);
     final handler = component.writeInternalComponent(writer, 0);
@@ -401,7 +431,7 @@ class VCDSimulator extends Simulator {
 
     final inputCount = component.inputCount;
     var clkOn = true;
-    for (final (t, currentInput) in inputs.take(ticks).indexed) {
+    for (final (t, currentInput) in iterable.take(ticks).indexed) {
       writer.timestamp(t);
       final inputStartAt = currentInput.length - inputCount;
       component.update(currentInput.sublist(inputStartAt, currentInput.length));
@@ -411,6 +441,8 @@ class VCDSimulator extends Simulator {
       clkOn = !clkOn;
     }
     writer.timestamp(ticks);
+
+    file.writeAsStringSync(writer.result);
   }
 }
 
@@ -512,8 +544,10 @@ class RepeatInputIterator implements Iterator<List<Bit>> {
 
 void main() {
   final newOr = orGate();
-  final simulator = VCDSimulator(ticks: 100);
+  final simulator = FileVCDSimulator(
+    ticks: 100,
+    file: File('assets/vcd/or.vcd')..createSync(recursive: true),
+    iterable: RepeatInputIterable(size: 2, repeatTime: 2),
+  );
   simulator.run(newOr);
-  File file = File('or.vcd');
-  file.writeAsStringSync(simulator.writer.result);
 }
