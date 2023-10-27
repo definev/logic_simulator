@@ -1,8 +1,6 @@
-
-
-
 import 'package:dart_vcd/dart_vcd.dart';
 import 'package:logic_simulator/features/gates/domain/gate_simulator/bit.dart';
+import 'package:logic_simulator/features/gates/domain/gate_simulator/component/port_names.dart';
 import 'package:logic_simulator/features/gates/domain/gate_simulator/vcd/vcd_file_simulator.dart';
 import 'package:logic_simulator/features/gates/domain/gate_simulator/vcd/vcd_writable_component.dart';
 
@@ -25,6 +23,9 @@ class Structural with Component, VCDWritable {
   final int outputCount;
   @override
   final String name;
+
+  @override
+  PortNames get portNames => super.portNames.copyWith();
 
   @override
   List<Bit> update(List<Bit> input) {

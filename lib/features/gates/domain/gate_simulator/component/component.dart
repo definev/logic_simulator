@@ -1,9 +1,14 @@
 import 'package:logic_simulator/features/gates/domain/gate_simulator/bit.dart';
+import 'package:logic_simulator/features/gates/domain/gate_simulator/component/port_names.dart';
 
 mixin Component {
   List<Bit> update(List<Bit> input);
+
   int get inputCount;
   int get outputCount => 1;
+
+  late PortNames portNames = PortNames.fromDefault(inputCount, outputCount);
+
   String get name;
 
   String get truthTable {
