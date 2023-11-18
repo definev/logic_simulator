@@ -17,12 +17,12 @@ class Or extends Structural {
     final nandB = CompIO(Nand(inputCount: 1));
     final nandC = CompIO(Nand(inputCount: 2));
 
-    cZero.addConnection(0, componentIndex: 1, inputIndex: 0);
-    cZero.addConnection(1, componentIndex: 2, inputIndex: 0);
+    cZero.addConnection(0, component: 1, index: 0);
+    cZero.addConnection(1, component: 2, index: 0);
 
-    nandA.addConnection(0, componentIndex: 3, inputIndex: 0);
-    nandB.addConnection(0, componentIndex: 3, inputIndex: 1);
-    nandC.addConnection(0, componentIndex: 0, inputIndex: 0);
+    nandA.addConnection(0, component: 3, index: 0);
+    nandB.addConnection(0, component: 3, index: 1);
+    nandC.addConnection(0, component: 0, index: 0);
 
     components.add(cZero);
     components.add(nandA);

@@ -13,8 +13,10 @@ class Structural with Component, VCDWritable {
     required this.inputCount,
     required this.outputCount,
     required this.name,
+    PortNames? portNames,
   })  : assert(components.first.input.length == outputCount),
-        assert(components.first.output.length == inputCount);
+        assert(components.first.output.length == inputCount),
+        _portNames = portNames ?? PortNames.fromDefault(inputCount, outputCount);
 
   final List<CompIO> components;
   @override
@@ -23,9 +25,10 @@ class Structural with Component, VCDWritable {
   final int outputCount;
   @override
   final String name;
+  final PortNames _portNames;
 
   @override
-  PortNames get portNames => super.portNames.copyWith();
+  PortNames get portNames => _portNames.copyWith();
 
   @override
   List<Bit> update(List<Bit> input) {
@@ -143,9 +146,9 @@ extension StructuralX on Structural {
     final outComponent = components[outComponentIndex];
     final connections = outComponent.connections.clone();
     for (final (outIndex, input) in connections.indexed) {
-      for (final (:inputIndex, componentIndex: inputComponentIndex) in input) {
-        final inputComponent = components[inputComponentIndex];
-        inputComponent.input[inputIndex] = outComponent.output[outIndex];
+      for (final (:index, :component) in input) {
+        final inputComponent = components[component];
+        inputComponent.input[index] = outComponent.output[outIndex];
       }
     }
   }
@@ -204,10 +207,10 @@ extension ConnectionsX on List<List<ComponentIndex>> {
   List<List<ComponentIndex>> clone() => List.generate(length, (index) => [...this[index]]);
 }
 
-extension CompToConnectionX on CompIO {
-  void addConnection(int outputIndex, {required int componentIndex, required int inputIndex}) {
-    connections[outputIndex].add((componentIndex: componentIndex, inputIndex: inputIndex));
+extension CompIOConnectionX on CompIO {
+  void addConnection(int outputIndex, {required int component, required int index}) {
+    connections[outputIndex].add((component: component, index: index));
   }
 }
 
-typedef ComponentIndex = ({int componentIndex, int inputIndex});
+typedef ComponentIndex = ({int component, int index});
