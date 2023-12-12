@@ -1,8 +1,12 @@
+import 'dart:math';
+
 class GridPosition {
-  const GridPosition(this.x, this.y);
+  GridPosition(this.x, this.y);
 
   final int x;
   final int y;
+
+  late final double distance = 1 - sqrt(pow(x, 2) + pow(y, 2)) / 10;
 
   @override
   String toString() {
