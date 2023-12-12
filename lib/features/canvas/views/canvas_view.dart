@@ -3,6 +3,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:logic_simulator/features/canvas/views/canvas_scroll_view.dart';
 
+import 'canvas_two_dimensional_child_delegate.dart';
+
 class CanvasView extends StatefulWidget {
   const CanvasView({super.key});
 
@@ -11,49 +13,48 @@ class CanvasView extends StatefulWidget {
 }
 
 class _CanvasViewState extends State<CanvasView> {
-  late final CanvasTwoDimensionalChildDelegate delegate;
+  List<CanvasElement> elements = [];
 
   @override
   void initState() {
     super.initState();
     final rand = Random();
-    delegate = CanvasTwoDimensionalChildDelegate(
-      [
-        for (var column = 0; column < 5; column += 1)
-          for (var row = 0; row < 5; row += 1)
-            () {
-              final randSize = Size(50 + rand.nextDouble() * 100, 50 + rand.nextDouble() * 100);
-              return CanvasElement(
-                ChildVicinity(xIndex: column, yIndex: row),
-                size: randSize,
-                child: Container(
-                  height: randSize.height,
-                  width: randSize.width,
-                  color: Colors.amber.withOpacity(
-                    (Offset(
-                              column.toDouble(),
-                              row.toDouble(),
-                            ).distanceSquared /
-                            100)
-                        .clamp(0.5, 1),
-                  ),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: Text('$column : $row'),
-                  ),
-                ),
-                offset: Offset(rand.nextDouble() * 500, rand.nextDouble() * 800),
-              );
-            }(),
-      ],
-    );
+    elements = [
+      for (var column = 0; column < 5; column += 1)
+        for (var row = 0; row < 5; row += 1)
+          () {
+            final offset = Offset(rand.nextDouble() * 1000 - 100, rand.nextDouble() * 2000 - 500);
+            return CanvasElement(offset: offset);
+          }(),
+    ];
+    for (final (index, element) in elements.indexed) {
+      print('index: $index, offset: ${element.offset}');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return CanvasScrollView(
-      diagonalDragBehavior: DiagonalDragBehavior.none,
-      delegate: delegate,
+    return Transform.scale(
+      scale: 0.7,
+      child: DecoratedBox(
+        decoration: BoxDecoration(border: Border.all(color: Colors.white)),
+        child: CanvasScrollView(
+          diagonalDragBehavior: DiagonalDragBehavior.free,
+          delegate: CanvasTwoDimensionalChildDelegate(
+            builder: (context, index, element) {
+              return Material(
+                color: Colors.transparent,
+                child: FilledButton(
+                  onPressed: () {},
+                  child: Text('index: $index, offset: ${element.offset}'),
+                ),
+              );
+            },
+            elements: elements,
+          ),
+          clipBehavior: Clip.none,
+        ),
+      ),
     );
   }
 }

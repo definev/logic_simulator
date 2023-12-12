@@ -1,89 +1,7 @@
-import 'package:equatable/equatable.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-
-typedef CanvasSize = ({Offset offset, Size size});
-
-extension on CanvasSize {
-  Offset get maxSize => offset + Offset(size.width, size.height);
-}
-
-class CanvasElement extends Equatable {
-  const CanvasElement(
-    this.vicinity, {
-    required this.child,
-    required this.size,
-    required this.offset,
-  });
-
-  final ChildVicinity vicinity;
-  final Size size;
-  final Widget child;
-  final Offset offset;
-
-  @override
-  List<Object?> get props => [vicinity.xIndex, vicinity.yIndex, offset];
-}
-
-class CanvasTwoDimensionalChildDelegate extends TwoDimensionalChildDelegate {
-  CanvasTwoDimensionalChildDelegate(this.elements) {
-    for (final element in elements) {
-      _sortedElements[element.vicinity] = element;
-    }
-  }
-
-  final List<CanvasElement> elements;
-  late final Map<ChildVicinity, CanvasElement> _sortedElements = {};
-  List<CanvasElement> getVisibleElement(Offset topLeft, Offset bottomRight) {
-    final result = <CanvasElement>[];
-
-    for (final element in elements) {
-      final offset = element.offset;
-      if (offset.dx > bottomRight.dx ||
-          offset.dx < topLeft.dx ||
-          offset.dy > bottomRight.dy ||
-          offset.dy < topLeft.dy) {
-        continue;
-      }
-      result.add(element);
-    }
-
-    return result;
-  }
-
-  late final CanvasSize _canvasSize = () {
-
-    var max = Offset.zero;
-    var offset = Offset.zero;
-    var size = Size.zero;
-    for (final element in elements) {
-
-      if (max.dx < element.offset.dx + element.size.width) {
-        max = Offset(element.offset.dx + element.size.width, max.dy);
-        offset = Offset(element.offset.dx, offset.dy);
-        size = Size(element.size.width, size.height);
-      }
-      if (max.dy < element.offset.dy + element.size.height) {
-        max = Offset(max.dx, element.offset.dy + element.size.height);
-        offset = Offset(offset.dx, element.offset.dy);
-        size = Size(size.width, element.size.height);
-      }
-    }
-    return (offset: offset, size: size);
-  }();
-
-  @override
-  Widget? build(BuildContext context, ChildVicinity vicinity) {
-    if (_sortedElements[vicinity] case final element?) {
-      return AutomaticKeepAlive(child: element.child);
-    }
-    return null;
-  }
-
-  @override
-  bool shouldRebuild(covariant CanvasTwoDimensionalChildDelegate oldDelegate) => elements != oldDelegate.elements;
-}
+import 'package:logic_simulator/features/canvas/views/canvas_two_dimensional_child_delegate.dart';
 
 class CanvasScrollView extends TwoDimensionalScrollView {
   const CanvasScrollView({
@@ -139,9 +57,9 @@ class CanvasTwoDimensionalViewport extends TwoDimensionalViewport {
       delegate: delegate,
       horizontalAxisDirection: horizontalAxisDirection,
       horizontalOffset: horizontalOffset,
-      mainAxis: mainAxis,
       verticalAxisDirection: verticalAxisDirection,
       verticalOffset: verticalOffset,
+      mainAxis: mainAxis,
       cacheExtent: cacheExtent,
       clipBehavior: clipBehavior,
     );
@@ -158,7 +76,9 @@ class CanvasTwoDimensionalViewport extends TwoDimensionalViewport {
       ..horizontalOffset = horizontalOffset
       ..mainAxis = mainAxis
       ..verticalAxisDirection = verticalAxisDirection
-      ..verticalOffset = verticalOffset;
+      ..verticalOffset = verticalOffset
+      ..cacheExtent = cacheExtent
+      ..clipBehavior = clipBehavior;
   }
 }
 
@@ -188,22 +108,22 @@ class CanvasRenderTwoDimensionalViewport extends RenderTwoDimensionalViewport {
       Offset(horizontalPixels, verticalPixels) - Offset(cacheExtent, cacheExtent),
       Offset(horizontalPixels + viewportWidth, verticalPixels + viewportHeight),
     );
+    if (elements.isEmpty) {
+      if (buildOrObtainChildFor(ChildVicinity(xIndex: -1, yIndex: 0)) case final child?) {
+        child.layout(constraints.loosen());
+        parentDataOf(child).layoutOffset = Offset(horizontalPixels, verticalPixels);
+      }
+      return;
+    }
 
-    for (final element in elements) {
-      if (buildOrObtainChildFor(element.vicinity) case final child?) {
+    for (final (vicinity, element) in elements) {
+      if (buildOrObtainChildFor(vicinity) case final child?) {
         child.layout(constraints.loosen());
         parentDataOf(child).layoutOffset = element.offset - Offset(horizontalPixels, verticalPixels);
       }
     }
 
-    final maxSize = canvasDelegate._canvasSize.maxSize;
-    verticalOffset.applyContentDimensions(
-      0.0,
-      (maxSize.dy - viewportDimension.height).clamp(0, double.infinity),
-    );
-    horizontalOffset.applyContentDimensions(
-      0.0,
-      (maxSize.dx - viewportDimension.width).clamp(0, double.infinity),
-    );
+    verticalOffset.applyContentDimensions(double.negativeInfinity, double.infinity);
+    horizontalOffset.applyContentDimensions(double.negativeInfinity, double.infinity);
   }
 }
