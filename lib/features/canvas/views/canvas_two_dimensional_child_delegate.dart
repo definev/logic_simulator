@@ -1,39 +1,29 @@
-import 'package:equatable/equatable.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
+import 'package:logic_simulator/features/canvas/domain/canvas_element.dart';
 import 'package:logic_simulator/features/canvas/views/binary_ilist.dart';
-
-class CanvasElement extends Equatable {
-  const CanvasElement({required this.offset});
-
-  final Offset offset;
-
-  @override
-  List<Object?> get props => [offset];
-}
 
 class CanvasTwoDimensionalChildDelegate extends TwoDimensionalChildDelegate {
   CanvasTwoDimensionalChildDelegate({
     required this.elements,
     required this.builder,
+    this.dimension = 100,
   });
 
-  final List<CanvasElement> elements;
-  late final BinaryIList<(int, CanvasElement)> _sortedDx = IList(elements.indexed) //
-      .binaryIList(defaultCompare(Axis.horizontal));
-
-  static Comparator<(int, CanvasElement)> defaultCompare(Axis axis) => switch (axis) {
-        Axis.horizontal => (a, b) => a.$2.offset.dx.compareTo(b.$2.offset.dx),
-        Axis.vertical => (a, b) => a.$2.offset.dy.compareTo(b.$2.offset.dy),
+  static Comparator<CanvasElement> defaultCompare(Axis axis) => switch (axis) {
+        Axis.horizontal => (a, b) => a.offset.dx.compareTo(b.offset.dx),
+        Axis.vertical => (a, b) => a.offset.dy.compareTo(b.offset.dy),
       };
 
-  final Widget Function(BuildContext context, int index, CanvasElement element) builder;
+  final BinaryIList<CanvasElement> elements;
+  final Widget Function(BuildContext context, CanvasElement element) builder;
+  final double dimension;
 
-  late Map<ChildVicinity, (int, CanvasElement)> _sortedElements = {};
+  Map<ChildVicinity, CanvasElement> _sortedElements = {};
   IList<(ChildVicinity, CanvasElement)> getVisibleElement(Offset topLeft, Offset bottomRight) {
-    var sorted = _sortedDx.whereIndexed(
+    var sorted = elements.whereIndexed(
       (sorted) {
-        final (_, CanvasElement(:offset)) = sorted;
+        final CanvasElement(:offset) = sorted;
 
         final deltaDxLeft = offset.dx - topLeft.dx;
         final deltaDxRight = bottomRight.dx - offset.dx;
@@ -48,7 +38,7 @@ class CanvasTwoDimensionalChildDelegate extends TwoDimensionalChildDelegate {
         .binaryIList(defaultCompare(Axis.vertical))
         .whereIndexed(
       (sorted) {
-        final (_, CanvasElement(:offset)) = sorted;
+        final CanvasElement(:offset) = sorted;
 
         final deltaDyLeft = offset.dy - topLeft.dy;
         final deltaDyRight = bottomRight.dy - offset.dy;
@@ -59,40 +49,44 @@ class CanvasTwoDimensionalChildDelegate extends TwoDimensionalChildDelegate {
       },
     );
     if (sorted == null) return <(ChildVicinity, CanvasElement)>[].lock;
-    _sortedElements = <ChildVicinity, (int, CanvasElement)>{};
-    return sorted.list.map(
-      (o) {
-        final copyVicinity = ChildVicinity(xIndex: o.$1, yIndex: 0);
-        _sortedElements[copyVicinity] = o;
-        return (copyVicinity, o.$2);
-      },
-    ).toIList();
+    _sortedElements = <ChildVicinity, CanvasElement>{};
+    var list = sorted.list.map(_toVicinity).toIList();
+    for (final selected in sorted.selectedSet) {
+      if (_sortedElements[selected.vicinity] == null) {
+        list = list.add(_toVicinity(selected));
+      }
+    }
+    return list;
+  }
+
+  (ChildVicinity, CanvasElement) _toVicinity(o) {
+    final copyVicinity = o.vicinity;
+    _sortedElements[copyVicinity] = o;
+    return (copyVicinity, o);
   }
 
   @override
   Widget? build(BuildContext context, ChildVicinity vicinity) {
     if (vicinity == ChildVicinity(xIndex: -1, yIndex: 0)) {
-      return SizedBox.square(
-        dimension: 100,
-        child: ColoredBox(
-          color: Colors.red,
-        ),
-      );
+      return SizedBox.square();
     }
+    if (vicinity.yIndex == 1) {
+      return VerticalDivider(color: Colors.black, width: 1);
+    }
+    if (vicinity.yIndex == 2) {
+      return Divider(height: 1);
+    }
+
     if (_sortedElements[vicinity] case final element?) {
       return AutomaticKeepAlive(
-        child: builder(context, element.$1, element.$2),
+        child: builder(context, element),
       );
     }
     return null;
   }
 
   @override
-  bool shouldRebuild(covariant CanvasTwoDimensionalChildDelegate oldDelegate) => elements != oldDelegate.elements;
-}
-
-extension on ChildVicinity {
-  ChildVicinity get copy => ChildVicinity(xIndex: xIndex, yIndex: yIndex);
+  bool shouldRebuild(covariant CanvasTwoDimensionalChildDelegate oldDelegate) => true;
 }
 
 typedef DistanceFunction<T> = int Function(T object);
